@@ -18,6 +18,8 @@ body{
 .card, .table{background:var(--card)}
 .btn-primary{background:var(--gold); border-color:var(--gold); color:#1b1b1b}
 .btn-primary:hover{background:var(--gold-dark); border-color:var(--gold-dark)}
+.btn, .nav-link, .navbar-brand { color: #1b1b1b }
+.navbar { color: #fff }
 .btn-outline-primary{border-color:var(--teal); color:var(--teal)}
 .btn-outline-primary:hover{background:rgba(15,76,92,0.06)}
 .badge.bg-danger{background:#d9534f}

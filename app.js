@@ -164,6 +164,7 @@ const Order = require('./Models/Order');
 const OrderItem = require('./Models/OrderItem');
 const ShippingDetails = require('./Models/ShippingDetails');
 const Payment = require('./Models/Payment');
+const adminController = require('./Controllers/AdminController');
 
 // Add product to cart (DB-backed)
 app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
@@ -212,6 +213,13 @@ app.get('/orders', checkAuthenticated, async (req, res) => {
         res.status(500).render('error', { error: err.message, user: req.session.user || null });
     }
 });
+
+// Admin dashboard
+app.get('/admin', checkAuthenticated, checkAdmin, adminController.dashboard);
+app.get('/admin/stats', checkAuthenticated, checkAdmin, adminController.stats);
+app.get('/admin/users', checkAuthenticated, checkAdmin, adminController.users);
+app.get('/admin/revenue', checkAuthenticated, checkAdmin, adminController.revenue);
+app.get('/admin/engagement', checkAuthenticated, checkAdmin, adminController.engagement);
 
 // Logout
 app.get('/logout', (req, res) => {

@@ -19,27 +19,7 @@
     <div class="auth-card">
       <h3 id="form-title">Login</h3>
 
-      <!-- auth flashes (show validation/errors near the forms) -->
-      <div id="auth-flashes" class="mb-3">
-        <% if (formData && formData._error) { %>
-          <div class="alert alert-danger alert-dismissible fade show" role="alert"><%= formData._error %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
-        <% } %>
-        <% if (flash && flash.error && flash.error.length) { %>
-          <% flash.error.forEach(e => { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert"><%= e %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
-          <% }); %>
-        <% } %>
-        <% if (flash && flash.success && flash.success.length) { %>
-          <% flash.success.forEach(m => { %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert"><%= m %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
-          <% }); %>
-        <% } %>
-        <% if (flash && flash.info && flash.info.length) { %>
-          <% flash.info.forEach(i => { %>
-            <div class="alert alert-info alert-dismissible fade show" role="alert"><%= i %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
-          <% }); %>
-        <% } %>
-      </div>
+      <!-- flashes are centralized in partials/flashes.ejs -->
 
       <form id="auth-login-form" action="/login" method="POST">
         <div class="mb-3">
