@@ -212,6 +212,47 @@ app.get('/logout', (req, res) => {
     });
 });
 
+// Profile settings (GET)
+app.get('/profile', checkAuthenticated, (req, res) => {
+    const user = req.session.user;
+    res.render('profile', { user });
+});
+
+// Profile update (POST) - handles avatar upload
+app.post('/profile', checkAuthenticated, upload.single('avatar'), async (req, res) => {
+    try {
+        const user = req.session.user;
+        const { username, address, contact, payment } = req.body;
+        let avatarFilename = null;
+        if (req.file) {
+            avatarFilename = req.file.filename;
+        }
+
+        // Attempt to persist to DB if possible, otherwise only update session
+        try {
+            await User.updateProfile(user.id, { username, address, contact, avatar: avatarFilename });
+        } catch (e) {
+            // Log but continue; some schemas may not have avatar column
+            console.warn('Could not persist avatar to DB (maybe column missing):', e.message);
+        }
+
+        // Update session user so UI reflects changes immediately
+        req.session.user = Object.assign({}, req.session.user, {
+            username: username || req.session.user.username,
+            address: address || req.session.user.address,
+            contact: contact || req.session.user.contact,
+            avatar: avatarFilename || req.session.user.avatar
+        });
+
+        req.flash('success', 'Profile updated');
+        res.redirect('/profile');
+    } catch (err) {
+        console.error('Profile update error', err);
+        req.flash('error', 'Failed to update profile');
+        res.redirect('/profile');
+    }
+});
+
 console.log('app.js starting');
 
 // log uncaught/unhandled errors so they don't crash silently

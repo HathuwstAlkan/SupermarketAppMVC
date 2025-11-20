@@ -42,4 +42,19 @@ document.addEventListener('DOMContentLoaded', () => {
       // let the form continue submitting (no preventDefault)
     });
   });
+  // Auto-dismiss bootstrap alerts after 5 seconds
+  try {
+    document.querySelectorAll('.alert-dismissible').forEach(alertEl => {
+      setTimeout(() => {
+        try {
+          const bsAlert = new bootstrap.Alert(alertEl);
+          bsAlert.close();
+        } catch (e) {
+          alertEl.remove();
+        }
+      }, 5000);
+    });
+  } catch (e) {
+    // ignore if bootstrap isn't available
+  }
 });
