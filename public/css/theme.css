@@ -42,3 +42,19 @@ body{
 .mode-toggle{color:var(--teal)}
 .navbar .nav-link{color:rgba(255,255,255,0.95)}
 .navbar .nav-link:hover{color:#fff}
+
+/* landing layout: show auth module on right on md+ screens */
+.auth-shell{display:flex; gap:2rem; align-items:center; justify-content:center; padding:4rem 1rem;}
+.auth-shell .auth-card{width:480px; max-width:90%; padding:2rem; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.06);}
+.auth-shell .auth-side{width:360px; max-width:30%; padding:2rem; text-align:center}
+@media (min-width:768px){
+  .auth-shell{flex-direction:row-reverse}
+}
+
+/* focus highlight for landing fields */
+.focus-highlight{box-shadow:0 0 0 4px rgba(15,76,92,0.12); border-radius:6px; transition:box-shadow 0.25s ease}
+
+/* footer stick-to-bottom */
+.site-footer{position:relative; bottom:0; left:0; right:0; background:transparent}
+.footer-link{color:var(--muted); text-decoration:none}
+.footer-link:hover{color:var(--teal); text-decoration:underline}
