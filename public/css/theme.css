@@ -46,6 +46,11 @@ body{
 .navbar .nav-link{color:rgba(255,255,255,0.95)}
 .navbar .nav-link:hover{color:#fff}
 
+/* ensure proper navbar layout: brand left, controls right */
+.navbar .container-fluid{display:flex; align-items:center}
+.navbar .navbar-collapse{display:flex; justify-content:flex-end; align-items:center}
+.navbar .navbar-nav.ms-auto{margin-left:auto}
+
 /* landing layout: show auth module on right on md+ screens */
 .auth-shell{display:flex; gap:2rem; align-items:center; justify-content:center; padding:4rem 1rem;}
 .auth-shell .auth-card{width:480px; max-width:90%; padding:2rem; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.06);}
