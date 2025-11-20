@@ -7,7 +7,8 @@ const CartController = {
       const user = req.session.user;
       if (!user) return res.redirect('/login');
       const cart = await CartItem.getByUser(user.id);
-      res.render('cart', { cart, user });
+      const cartCount = await CartItem.getCountByUser(user.id);
+      res.render('cart', { cart, user, cartCount });
     } catch (err) {
       console.error('Cart view error', err);
       res.status(500).render('error', { error: err.message, user: req.session.user || null });

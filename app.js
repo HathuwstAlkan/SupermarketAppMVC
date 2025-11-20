@@ -183,8 +183,9 @@ app.get('/order/:id', checkAuthenticated, async (req, res) => {
 
         const items = await OrderItem.getByOrder(orderId);
         const shipping = await ShippingDetails.getByOrder(orderId);
+        const cartCount = await CartItem.getCountByUser(user.id);
         // payment details may be retrieved via Payment model if needed
-        res.render('order', { order, items, shipping, user });
+        res.render('order', { order, items, shipping, user, cartCount });
     } catch (err) {
         console.error('Order view error', err);
         res.status(500).render('error', { error: err.message, user: req.session.user || null });

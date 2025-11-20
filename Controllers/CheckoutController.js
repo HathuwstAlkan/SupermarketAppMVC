@@ -16,7 +16,8 @@ const CheckoutController = {
         req.flash('info', 'Your cart is empty');
         return res.redirect('/cart');
       }
-      res.render('checkout', { cart, user });
+      const cartCount = await CartItem.getCountByUser(user.id);
+      res.render('checkout', { cart, user, cartCount });
     } catch (err) {
       console.error(err);
       res.status(500).render('error', { error: err.message, user: req.session.user || null });

@@ -1,18 +1,34 @@
 AI Assistance and Project Change Log
 
 ---
-
 AI Usage Declaration
 
-- User prompt: The student requested improvements to the SupermarketAppMVC project: enforce product quantity limits so users cannot add more than available, add a checkout/payment flow (mock), change quantity selection from a predefined dropdown to an incremental numeric control, replace text action buttons with icons and hover tooltips plus a flying-dot add-to-cart animation, persist cart in a database table instead of session storage, and refresh the UI with a minimalistic "mini luxury" theme. The student also requested documentation describing AI usage for academic submission.
 
-- Assistant contributions (summary):
   - Analyzed the project structure and identified files to change (`app.js`, controllers, models, and views under `views/`, plus `public/` for assets).
   - Produced a prioritized implementation plan and a tracked TODO list.
   - Implemented a minimal, safe proof-of-concept to enforce quantity limits server-side and update the product list view to use an incremental numeric input for selecting quantities.
   - Added this AI usage and changelog file for submission.
 
 Suggested submission text (copy/paste):
+
+---
+
+This turn (summary)
+
+- User prompt (this turn): Request a SQL file that can be copy-pasted into MySQL Workbench because `mysql` is not available on the command line.
+
+- Assistant actions (this turn):
+  1. Created `workbench_schema.sql` at the project root — a Workbench-friendly SQL script you can copy/paste and run. The script:
+     - Uses only Workbench-compatible statements (no `CREATE INDEX IF NOT EXISTS`).
+     - Creates `users`, `products` (if missing), `orders`, `order_items`, `payments`, `shipping_details`, `cart_items`, and `vendors` with safe foreign-key declarations.
+     - Does NOT DROP existing tables (safer). A comment at the top explains how to manually drop tables first if you want a clean re-create.
+  2. Explained how to run it in Workbench (copy/paste & execute) and provided safe notes about dropping tables and verifying the schema.
+
+- Files added/changed this turn:
+  - Added: `workbench_schema.sql`
+  - Updated: `schema.sql` earlier to fix FK nullability (previous turn)
+
+If you run into any errors when pasting and executing `workbench_schema.sql` in Workbench, paste the exact error message here and I'll fix it. After the schema is applied, start the app with `node app.js` and I can continue with the UI improvements.
 
 "AI assistance: This project used an AI coding assistant to analyze the codebase, recommend and implement improvements, and produce project documentation. The assistant implemented server-side enforcement of product quantity limits, updated the product listing UI to use an incremental numeric quantity input, and prepared a tracked TODO list and implementation plan for further enhancements (DB-backed cart, mock checkout flow, UI polish). All code was reviewed and adapted by the student before final submission."
 

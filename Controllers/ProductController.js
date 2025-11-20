@@ -1,9 +1,23 @@
 const Product = require('../Models/Product');
+const CartItem = require('../Models/CartItem');
+
+async function getCartCount(req) {
+    try {
+        if (req.session && req.session.user) {
+            const cnt = await CartItem.getCountByUser(req.session.user.id);
+            return cnt || 0;
+        }
+    } catch (e) {
+        return 0;
+    }
+    return 0;
+}
 
 const list = async (req, res) => {
     try {
         const products = await Product.getAll();
-        res.render('index', { products, user: req.session?.user || null });
+        const cartCount = await getCartCount(req);
+        res.render('index', { products, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -21,9 +35,11 @@ const getById = async (req, res) => {
         }
         
         const viewTemplate = req.path.includes('updateProduct') ? 'updateProduct' : 'product';
+        const cartCount = await getCartCount(req);
         res.render(viewTemplate, { 
             product,
-            user: req.session.user || null
+            user: req.session.user || null,
+            cartCount
         });
     } catch (err) {
         res.status(500).render('error', { 
@@ -79,7 +95,8 @@ const remove = async (req, res) => {
 const inventory = async (req, res) => {
     try {
         const products = await Product.getAll();
-        res.render('inventory', { products, user: req.session?.user || null });
+        const cartCount = await getCartCount(req);
+        res.render('inventory', { products, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -88,7 +105,8 @@ const inventory = async (req, res) => {
 const shopping = async (req, res) => {
     try {
         const products = await Product.getAll();
-        res.render('shopping', { products, user: req.session?.user || null });
+        const cartCount = await getCartCount(req);
+        res.render('shopping', { products, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
