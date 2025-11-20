@@ -19,10 +19,32 @@
     <div class="auth-card">
       <h3 id="form-title">Login</h3>
 
+      <!-- auth flashes (show validation/errors near the forms) -->
+      <div id="auth-flashes" class="mb-3">
+        <% if (formData && formData._error) { %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert"><%= formData._error %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+        <% } %>
+        <% if (flash && flash.error && flash.error.length) { %>
+          <% flash.error.forEach(e => { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert"><%= e %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+          <% }); %>
+        <% } %>
+        <% if (flash && flash.success && flash.success.length) { %>
+          <% flash.success.forEach(m => { %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert"><%= m %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+          <% }); %>
+        <% } %>
+        <% if (flash && flash.info && flash.info.length) { %>
+          <% flash.info.forEach(i => { %>
+            <div class="alert alert-info alert-dismissible fade show" role="alert"><%= i %><button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>
+          <% }); %>
+        <% } %>
+      </div>
+
       <form id="auth-login-form" action="/login" method="POST">
         <div class="mb-3">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" class="form-control" required>
+          <input type="email" id="email" name="email" class="form-control" required value="<%= formData && formData.email ? formData.email : '' %>">
         </div>
         <div class="mb-3">
           <label for="password">Password</label>
@@ -34,11 +56,11 @@
       <form id="auth-register-form" action="/register" method="POST" class="hidden mt-3">
         <div class="mb-3">
           <label for="username">Username</label>
-          <input id="username" name="username" class="form-control">
+          <input id="username" name="username" class="form-control" value="<%= formData && formData.username ? formData.username : '' %>">
         </div>
         <div class="mb-3">
           <label for="r-email">Email</label>
-          <input type="email" id="r-email" name="email" class="form-control">
+          <input type="email" id="r-email" name="email" class="form-control" value="<%= formData && formData.email ? formData.email : '' %>">
         </div>
         <div class="mb-3">
           <label for="r-password">Password</label>
@@ -46,11 +68,11 @@
         </div>
         <div class="mb-3">
           <label for="address">Address</label>
-          <input id="address" name="address" class="form-control">
+          <input id="address" name="address" class="form-control" value="<%= formData && formData.address ? formData.address : '' %>">
         </div>
         <div class="mb-3">
           <label for="contact">Contact</label>
-          <input id="contact" name="contact" class="form-control">
+          <input id="contact" name="contact" class="form-control" value="<%= formData && formData.contact ? formData.contact : '' %>">
         </div>
         <div class="mb-3">
           <label for="role">Role</label>

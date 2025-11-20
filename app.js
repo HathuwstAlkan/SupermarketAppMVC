@@ -45,6 +45,8 @@ app.use(async (req, res, next) => {
         error: req.flash('error') || [],
         info: req.flash('info') || []
     };
+    const _form = req.flash('formData') || [];
+    res.locals.formData = _form.length ? _form[0] : null;
     if (req.session?.user) {
         try {
             const cnt = await CartItem.getCountByUser(req.session.user.id);
