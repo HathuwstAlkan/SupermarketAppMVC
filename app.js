@@ -111,6 +111,12 @@ app.post('/login', async (req, res) => {
         if (user) {
             req.session.user = user;
             req.flash('success', 'Login successful!');
+            // if we stored a returnTo path (protected page), redirect there first
+            if (req.session.returnTo) {
+                const target = req.session.returnTo;
+                delete req.session.returnTo;
+                return res.redirect(target);
+            }
             if (user.role === 'user') res.redirect('/shopping');
             else res.redirect('/inventory');
         } else {
@@ -143,6 +149,8 @@ app.get('/deleteProduct/:id', productController.delete);
 // ensure these middleware exist in app.js (if not, add them)
 const checkAuthenticated = (req, res, next) => {
     if (req.session && req.session.user) return next();
+    // remember where user wanted to go so we can redirect after login
+    req.session.returnTo = req.originalUrl;
     req.flash('error', 'Please log in to view this resource');
     res.redirect('/login');
 };
