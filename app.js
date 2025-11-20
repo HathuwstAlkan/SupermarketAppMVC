@@ -6,6 +6,7 @@ const app = express();
 const db = require('./db');
 const User = require('./Models/User');
 const Product = require('./Models/Product');
+const CartItem = require('./Models/CartItem');
 
 // Import product controller only (like StudentAppMVC)
 const productController = require('./Controllers/ProductController');
@@ -34,6 +35,26 @@ app.use(session({
 app.use(flash());
 app.use((req, res, next) => {
     res.locals.user = req.session?.user || null;
+    next();
+});
+
+// expose flash messages and cart count to views
+app.use(async (req, res, next) => {
+    res.locals.flash = {
+        success: req.flash('success') || [],
+        error: req.flash('error') || [],
+        info: req.flash('info') || []
+    };
+    if (req.session?.user) {
+        try {
+            const cnt = await CartItem.getCountByUser(req.session.user.id);
+            res.locals.cartCount = cnt || 0;
+        } catch (e) {
+            res.locals.cartCount = 0;
+        }
+    } else {
+        res.locals.cartCount = 0;
+    }
     next();
 });
 
@@ -127,43 +148,59 @@ const checkAdmin = (req, res, next) => {
 app.get('/inventory', checkAuthenticated, checkAdmin, productController.inventory);
 app.get('/shopping', checkAuthenticated, productController.shopping);
 
-// --- Cart / logout routes (add these) ---
+// --- Cart / Checkout / Orders / logout routes ---
+const cartController = require('./Controllers/CartController');
+const checkoutController = require('./Controllers/CheckoutController');
+const Order = require('./Models/Order');
+const OrderItem = require('./Models/OrderItem');
+const ShippingDetails = require('./Models/ShippingDetails');
+const Payment = require('./Models/Payment');
 
-// Add product to cart (expects a POST form)
-app.post('/add-to-cart/:id', checkAuthenticated, async (req, res) => {
+// Add product to cart (DB-backed)
+app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
+
+// View cart
+app.get('/cart', checkAuthenticated, cartController.view);
+
+// Remove single product from cart
+app.post('/cart/remove/:id', checkAuthenticated, cartController.remove);
+
+// Clear cart
+app.post('/cart/clear', checkAuthenticated, cartController.clear);
+
+// Checkout pages
+app.get('/checkout', checkAuthenticated, checkoutController.showCheckout);
+app.post('/checkout', checkAuthenticated, checkoutController.performCheckout);
+
+// Display a single order (receipt)
+app.get('/order/:id', checkAuthenticated, async (req, res) => {
     try {
-        const productId = req.params.id;
-        const quantity = parseInt(req.body.quantity, 10) || 1;
+        const user = req.session.user;
+        const orderId = parseInt(req.params.id, 10);
+        const order = await Order.getById(orderId);
+        if (!order) return res.status(404).render('error', { error: 'Order not found', user });
+        if (order.user_id !== user.id && user.role !== 'admin') return res.status(403).render('error', { error: 'Access denied', user });
 
-        const product = await Product.getById(productId);
-        if (!product) return res.status(404).send('Product not found');
-
-        if (!req.session.cart) req.session.cart = [];
-
-        const existing = req.session.cart.find(item => item.id === product.id);
-        if (existing) {
-            existing.quantity += quantity;
-        } else {
-            req.session.cart.push({
-                id: product.id,
-                productName: product.productName,
-                price: product.price,
-                quantity,
-                image: product.image
-            });
-        }
-
-        res.redirect('/cart');
+        const items = await OrderItem.getByOrder(orderId);
+        const shipping = await ShippingDetails.getByOrder(orderId);
+        // payment details may be retrieved via Payment model if needed
+        res.render('order', { order, items, shipping, user });
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Failed to add to cart');
+        console.error('Order view error', err);
+        res.status(500).render('error', { error: err.message, user: req.session.user || null });
     }
 });
 
-// View cart
-app.get('/cart', checkAuthenticated, (req, res) => {
-    const cart = req.session.cart || [];
-    res.render('cart', { cart, user: req.session.user || null });
+// List orders for current user
+app.get('/orders', checkAuthenticated, async (req, res) => {
+    try {
+        const user = req.session.user;
+        const orders = await Order.getByUser(user.id);
+        res.render('orders', { orders, user });
+    } catch (err) {
+        console.error('Orders list error', err);
+        res.status(500).render('error', { error: err.message, user: req.session.user || null });
+    }
 });
 
 // Logout

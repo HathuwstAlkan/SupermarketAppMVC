@@ -1,0 +1,17 @@
+/* Minimal "mini luxury" theme: muted palette and clean spacing */
+:root{
+  --bg:#fbfbfb;
+  --card:#ffffff;
+  --muted:#6b6b6b;
+  --accent:#b08958; /* muted gold */
+  --accent-dark:#8b6f45;
+}
+body{background:var(--bg);font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#222}
+.navbar-brand{font-weight:700; letter-spacing:0.5px}
+.navbar{background:linear-gradient(90deg, rgba(20,20,20,1) 0%, rgba(35,35,35,1) 100%)}
+.card, .table{background:var(--card)}
+.btn-primary{background:var(--accent); border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-dark); border-color:var(--accent-dark)}
+.badge.bg-danger{background:#d9534f}
+.fly-dot{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--accent);z-index:9999;transition:transform 0.5s ease, opacity 0.5s ease}
+.alert{border-radius:6px}
