@@ -60,9 +60,9 @@ app.use(async (req, res, next) => {
 
 // --- AUTH ROUTES (restore original behaviour) ---
 
-// show register page
+// redirect register GET to landing with mode=register
 app.get('/register', (req, res) => {
-    res.render('register', { messages: req.flash('error'), formData: req.flash('formData')[0] || {}, user: req.session?.user || null });
+    res.redirect('/?mode=register');
 });
 
 // handle register (now using User model)
@@ -71,29 +71,29 @@ app.post('/register', async (req, res) => {
     if (!username || !email || !password || !address || !contact || !role) {
         req.flash('error', 'All fields are required.');
         req.flash('formData', req.body);
-        return res.redirect('/register');
+        return res.redirect('/?mode=register');
     }
     if (password.length < 6) {
         req.flash('error', 'Password should be at least 6 or more characters long');
         req.flash('formData', req.body);
-        return res.redirect('/register');
+        return res.redirect('/?mode=register');
     }
 
     try {
         await User.create({ username, email, password, address, contact, role });
         req.flash('success', 'Registration successful! Please log in.');
-        res.redirect('/login');
+        res.redirect('/?mode=login');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Registration failed');
         req.flash('formData', req.body);
-        res.redirect('/register');
+        res.redirect('/?mode=register');
     }
 });
 
-// show login page
+// redirect login GET to landing with mode=login
 app.get('/login', (req, res) => {
-    res.render('login', { messages: req.flash('success'), errors: req.flash('error'), user: req.session?.user || null });
+    res.redirect('/?mode=login');
 });
 
 // handle login (now using User model)
@@ -101,7 +101,7 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
         req.flash('error', 'All fields are required.');
-        return res.redirect('/login');
+        return res.redirect('/?mode=login');
     }
 
     try {
@@ -113,17 +113,24 @@ app.post('/login', async (req, res) => {
             else res.redirect('/inventory');
         } else {
             req.flash('error', 'Invalid email or password.');
-            res.redirect('/login');
+            res.redirect('/?mode=login');
         }
     } catch (err) {
         console.error(err);
         req.flash('error', 'Login failed');
-        res.redirect('/login');
+        res.redirect('/?mode=login');
     }
 });
 
 // Product routes (similar to StudentAppMVC)
-app.get('/', productController.list);
+app.get('/', async (req, res, next) => {
+    // If user is not logged in, render landing page (login/register combined)
+    if (!req.session || !req.session.user) {
+        const mode = req.query.mode || 'login';
+        return res.render('landing', { user: null, mode });
+    }
+    return productController.list(req, res, next);
+});
 app.get('/product/:id', productController.getById);
 app.get('/addProduct', (req, res) => res.render('addProduct'));
 app.post('/addProduct', upload.single('image'), productController.add);

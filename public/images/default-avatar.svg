@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" role="img" aria-label="default avatar">
   <rect x="0" y="0" width="24" height="24" fill="#f5f5f5" />
-  <circle cx="12" cy="9" r="3.2" fill="#d0d0d0" />
-  <path d="M4 20c1.5-3 4.5-4 8-4s6.5 1 8 4" fill="#d0d0d0" />
+  <!-- head -->
+  <circle cx="12" cy="7.5" r="3.2" fill="#d0d0d0" />
+  <!-- simple torso block under head -->
+  <rect x="6" y="11" width="12" height="7" rx="3" fill="#d0d0d0" />
 </svg>
