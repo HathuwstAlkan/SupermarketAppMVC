@@ -15,20 +15,31 @@ async function getCartCount(req) {
 
 const list = async (req, res) => {
     try {
-        const products = await Product.getAll();
+        const products = await Product.getAllExtended();
         const cartCount = await getCartCount(req);
-        // if user is logged in, subtract their cart quantities so availability reflects items in cart
-        let productsAdjusted = products;
+        // Group products by category for shelf-style display
+        const categories = {};
+        products.forEach(p => {
+            const cat = p.category || 'Uncategorized';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(p);
+        });
+
+        // adjust availability by user's cart
+        let cartMap = {};
         if (req.session && req.session.user) {
             const cartItems = await CartItem.getByUser(req.session.user.id);
-            const map = {};
-            cartItems.forEach(ci => { map[ci.product_id] = (map[ci.product_id] || 0) + ci.quantity; });
-            productsAdjusted = products.map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (map[p.id] || 0)) }));
-        } else {
-            productsAdjusted = products.map(p => ({ ...p, available: p.quantity || 0 }));
+            cartItems.forEach(ci => { cartMap[ci.product_id] = (cartMap[ci.product_id] || 0) + ci.quantity; });
         }
 
-        res.render('index', { products: productsAdjusted, user: req.session?.user || null, cartCount });
+        Object.keys(categories).forEach(cat => {
+            categories[cat] = categories[cat].map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (cartMap[p.id] || 0)) }));
+        });
+
+        // featured products for landing/carousel
+        const featured = products.filter(p => p.featured).slice(0, 8);
+
+        res.render('index', { categories, featured, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -116,18 +127,39 @@ const inventory = async (req, res) => {
 
 const shopping = async (req, res) => {
     try {
-        const products = await Product.getAll();
+        const products = await Product.getAllExtended();
         const cartCount = await getCartCount(req);
-        let productsAdjusted = products;
+        // group by category and render shopping catalog
+        const categories = {};
+        products.forEach(p => {
+            const cat = p.category || 'Uncategorized';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(p);
+        });
+
+        let cartMap = {};
         if (req.session && req.session.user) {
             const cartItems = await CartItem.getByUser(req.session.user.id);
-            const map = {};
-            cartItems.forEach(ci => { map[ci.product_id] = (map[ci.product_id] || 0) + ci.quantity; });
-            productsAdjusted = products.map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (map[p.id] || 0)) }));
-        } else {
-            productsAdjusted = products.map(p => ({ ...p, available: p.quantity || 0 }));
+            cartItems.forEach(ci => { cartMap[ci.product_id] = (cartMap[ci.product_id] || 0) + ci.quantity; });
         }
-        res.render('shopping', { products: productsAdjusted, user: req.session?.user || null, cartCount });
+
+        Object.keys(categories).forEach(cat => {
+            categories[cat] = categories[cat].map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (cartMap[p.id] || 0)) }));
+        });
+
+        res.render('shopping', { categories, user: req.session?.user || null, cartCount });
+    } catch (err) {
+        res.status(500).render('error', { error: err.message, user: req.session?.user || null });
+    }
+};
+
+// list products in a specific category
+const byCategory = async (req, res) => {
+    try {
+        const cat = req.params.category;
+        const items = await Product.getByCategory(cat);
+        const cartCount = await getCartCount(req);
+        res.render('products/category', { category: cat, products: items, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }

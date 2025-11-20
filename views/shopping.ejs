@@ -12,59 +12,37 @@
 <body>
     <%- include('partials/navbar') %>
 
-  <div class="container">
-    <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
-    <br>
-    <div class="text-center"><h2>Products from Supermarket</h2></div>
-    <br>
-    <table class="table table-hover small text-center">
-      <thead>
-          <tr>
-            <th width="100">Product Name</th>
-            <th width="100">Product Image</th>
-            <th width="50">Quantity</th>
-            <th width="50">Price</th>
-            <th width="50">Quantity</th>
-            <th width="50">Buy</th>
-          </tr>
-      </thead>
-      <tbody>
-        <% for(let i=0; i < products.length; i++) { %>
-          <tr>
-            <td><a href="/product/<%= products[i].id %>" ><%= products[i].productName %></a></td>
-            <td><img src = "images/<%= products[i].image %>" width="20%"></td>
-            <td><%= typeof products[i].available !== 'undefined' ? products[i].available : products[i].quantity %></td>
-            <td>$<%= products[i].price.toFixed(2) %></td>
-            <!-- <td>
-              <select id="role" name="role" class="form-control" >
-                <option value="1" selected >1</option>
-                <option value="2" >2</option>
-                <option value="3" >3</option>
-                <option value="4" >4</option>
-                <option value="5" >5</option>
-              </select>
-            </td> -->
-            <!-- Buy Link -->
-            <!-- <td><a href="/buyProduct/<%#= products[i].id %>" class="btn btn-primary mt-3">Buy</a></td> -->
-            <td>
-              <div class="input-group" style="max-width:150px;margin:0 auto;">
-                <button class="btn btn-outline-secondary btn-decrement" type="button" data-target="qty-<%= products[i].id %>">-</button>
-                <input type="number" step="1" min="1" value="1" id="qty-<%= products[i].id %>" name="quantity" class="form-control qty-input" data-max="<%= typeof products[i].available !== 'undefined' ? products[i].available : products[i].quantity %>">
-                <button class="btn btn-outline-secondary btn-increment" type="button" data-target="qty-<%= products[i].id %>">+</button>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="mb-0">Catalog</h2>
+      <div class="d-flex gap-2">
+        <input id="catalogSearch" class="form-control form-control-sm" placeholder="Search products..." style="min-width:220px;">
+        <select id="catalogCategory" class="form-select form-select-sm" style="max-width:200px;">
+          <option value="all">All categories</option>
+          <% Object.keys(categories).forEach(cat => { %>
+            <option value="<%= cat %>"><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <% Object.keys(categories).forEach(cat => { %>
+      <section class="category-shelf mb-4">
+        <h3 class="mb-2"><%= cat %></h3>
+        <div class="shelf position-relative">
+          <button class="shelf-nav left btn btn-sm btn-light position-absolute" aria-label="Scroll left">&larr;</button>
+          <div class="shelf-row d-flex gap-3 overflow-auto py-2 px-1">
+            <% categories[cat].forEach(p => { %>
+              <div class="shelf-item" style="min-width:200px;max-width:200px;">
+                <%- include('partials/product-card', { product: p }) %>
               </div>
-            </td>
-
-            <td>
-                <form action="/add-to-cart/<%= products[i].id %>" method="POST" class="add-to-cart-form">
-                  <input type="hidden" name="quantity" value="1" id="hidden-qty-<%= products[i].id %>">
-                  <button type="submit" class="btn btn-primary mt-3 btn-add" title="Add to cart"><i class="fa fa-cart-plus"></i></button>
-                </form>
-            </td>
-
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+            <% }) %>
+          </div>
+          <button class="shelf-nav right btn btn-sm btn-light position-absolute" aria-label="Scroll right">&rarr;</button>
+        </div>
+        <div class="mt-2 text-end"><a class="btn btn-link" href="/products/<%= encodeURIComponent(cat) %>">View all <%= cat %></a></div>
+      </section>
+    <% }) %>
   </div>
   <script>
     // small client-side helpers to keep quantity input in sync and clamp to available stock

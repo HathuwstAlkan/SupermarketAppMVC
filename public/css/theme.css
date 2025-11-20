@@ -59,6 +59,14 @@ body{
   .auth-shell{flex-direction:row-reverse}
 }
 
+/* shelf styles */
+.category-shelf .shelf{position:relative}
+.category-shelf .shelf-row::-webkit-scrollbar{height:8px}
+.category-shelf .shelf-row .product-card{width:100%}
+.shelf-nav{top:50%; transform:translateY(-50%); z-index:5}
+.shelf-nav.left{left:4px}
+.shelf-nav.right{right:4px}
+
 /* focus highlight for landing fields */
 .focus-highlight{box-shadow:0 0 0 4px rgba(15,76,92,0.12); border-radius:6px; transition:box-shadow 0.25s ease}
 

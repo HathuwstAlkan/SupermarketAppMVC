@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Products - <%= category %></title>
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="container mt-4">
+    <h2>Category: <%= category %></h2>
+    <div class="row mt-3">
+      <% products.forEach(p => { %>
+        <div class="col-6 col-md-3 mb-3">
+          <%- include('../partials/product-card', { product: p }) %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <script src="/js/gallery.js"></script>
+  <%- include('../partials/footer') %>
+</body>
+</html>
