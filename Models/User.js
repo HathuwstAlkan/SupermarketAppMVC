@@ -11,7 +11,7 @@ const User = {
         const sql = 'INSERT INTO users (username, email, password, address, contact, role) VALUES (?, ?, SHA1(?), ?, ?, ?)';
         const [result] = await db.query(sql, [username, email, password, address, contact, role]);
         return result.insertId;
-    }
+    },
 
     async updateProfile(userId, { username, address, contact, avatar }) {
         // Update basic profile fields; update avatar only if column exists
