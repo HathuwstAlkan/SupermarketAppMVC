@@ -17,14 +17,22 @@
         <div class="card">
           <div class="card-body text-center">
             <% const avatar = user && user.avatar ? user.avatar : 'default-avatar.svg'; %>
-            <img src="/images/<%= avatar %>" class="rounded-circle mb-3" width="120" height="120" style="object-fit:cover;">
+            <form id="avatarForm" action="/profile" method="POST" enctype="multipart/form-data">
+              <div class="avatar-wrapper mx-auto mb-3" style="width:120px; height:120px;">
+                <img id="profileAvatar" src="/images/<%= avatar %>" class="rounded-circle" width="120" height="120" style="object-fit:cover;">
+                <label for="avatarInput" class="avatar-edit" title="Edit avatar">
+                  <i class="fa fa-pencil" aria-hidden="true"></i>
+                </label>
+                <input id="avatarInput" name="avatar" type="file" accept="image/*" style="display:none">
+              </div>
+            </form>
             <h5><%= user.username %></h5>
             <p class="text-muted"><%= user.email %></p>
           </div>
         </div>
       </div>
       <div class="col-md-8">
-        <form action="/profile" method="POST" enctype="multipart/form-data">
+          <form id="profileForm" action="/profile" method="POST" enctype="multipart/form-data">
           <div class="mb-3">
             <label for="username" class="form-label">Display name</label>
             <input type="text" class="form-control" id="username" name="username" value="<%= user.username %>">
@@ -37,10 +45,7 @@
             <label for="contact" class="form-label">Contact</label>
             <input id="contact" name="contact" class="form-control" value="<%= user.contact || '' %>">
           </div>
-          <div class="mb-3">
-            <label for="avatar" class="form-label">Upload profile picture</label>
-            <input class="form-control" type="file" id="avatar" name="avatar" accept="image/*">
-          </div>
+          <!-- avatar is uploaded via the avatar overlay in the left column -->
 
           <div class="mb-3">
             <label for="payment" class="form-label">Primary payment method (placeholder)</label>
@@ -58,6 +63,7 @@
     </div>
   </div>
 
-  <%- include('partials/footer') %>
+    <script src="/js/profile.js"></script>
+    <%- include('partials/footer') %>
 </body>
 </html>

@@ -33,7 +33,13 @@ const CartController = {
       const qtyToAdd = Math.min(requested, canAdd);
 
       if (qtyToAdd <= 0) {
-        req.flash('error', 'Cannot add more of this product - not enough stock');
+        // No available quantity
+        const msg = 'Out of Stock';
+        const accept = (req.get('Accept') || '').toLowerCase();
+        if (req.xhr || accept.includes('application/json')) {
+          return res.status(400).json({ success: false, error: msg });
+        }
+        req.flash('error', msg);
         return res.redirect('/shopping');
       }
 
@@ -51,7 +57,13 @@ const CartController = {
       res.redirect('/cart');
     } catch (err) {
       console.error('Add to cart error', err);
-      res.status(500).send('Failed to add to cart');
+      const msg = err && err.message ? `Failed to add to cart: ${err.message}` : 'Failed to add to cart: Unknown Error';
+      const accept = (req.get('Accept') || '').toLowerCase();
+      if (req.xhr || accept.includes('application/json')) {
+        return res.status(500).json({ success: false, error: msg });
+      }
+      req.flash('error', msg);
+      res.redirect('/shopping');
     }
   },
 
