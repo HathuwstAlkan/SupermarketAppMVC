@@ -1,0 +1,50 @@
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Supermarket App</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+      <ul class="navbar-nav me-auto">
+        <% if (user && user.role === 'admin') { %>
+          <li class="nav-item"><a class="nav-link" href="/inventory">Inventory</a></li>
+          <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
+        <% } %>
+      </ul>
+
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/cart">
+            <i class="fa fa-shopping-cart"></i>
+            <span class="badge bg-danger"><%= typeof cartCount !== 'undefined' ? cartCount : 0 %></span>
+          </a>
+        </li>
+        <% if (user) { %>
+          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+        <% } else { %>
+          <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
+          <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+
+  <!-- flash messages (kept here so all pages render them consistently) -->
+  <div class="container mt-2">
+    <% if (flash && flash.error && flash.error.length) { %>
+      <% flash.error.forEach(e => { %>
+        <div class="alert alert-danger"><%= e %></div>
+      <% }); %>
+    <% } %>
+    <% if (flash && flash.success && flash.success.length) { %>
+      <% flash.success.forEach(m => { %>
+        <div class="alert alert-success"><%= m %></div>
+      <% }); %>
+    <% } %>
+    <% if (flash && flash.info && flash.info.length) { %>
+      <% flash.info.forEach(i => { %>
+        <div class="alert alert-info"><%= i %></div>
+      <% }); %>
+    <% } %>
+  </div>
+</nav>

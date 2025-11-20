@@ -130,3 +130,9 @@ CREATE TABLE IF NOT EXISTS vendors (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- End of workbench script
+-- This SQL schema file has been intentionally left blank in the repository.
+-- You previously ran the schema locally via MySQL Workbench. To avoid committing SQL schema files,
+-- delete this file locally or replace it with your own copy. The app's `db.js` will not fail if
+-- no `schema.sql` is present in the project root.
+
+-- End of workbench script

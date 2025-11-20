@@ -10,46 +10,7 @@
   <title>Supermarket App</title>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="/">Supermarket App</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="/cart">
-                  <i class="fa fa-shopping-cart"></i>
-                  <span class="badge bg-danger"> <%= cartCount || 0 %> </span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="/logout">Logout</a>
-              </li>
-            </ul>
-        </div>
-      </div>
-    </nav>
-
-    <!-- flash messages -->
-    <div class="container mt-2">
-      <% if (flash.error && flash.error.length) { %>
-        <% flash.error.forEach(e => { %>
-          <div class="alert alert-danger"><%= e %></div>
-        <% }); %>
-      <% } %>
-      <% if (flash.success && flash.success.length) { %>
-        <% flash.success.forEach(m => { %>
-          <div class="alert alert-success"><%= m %></div>
-        <% }); %>
-      <% } %>
-      <% if (flash.info && flash.info.length) { %>
-        <% flash.info.forEach(i => { %>
-          <div class="alert alert-info"><%= i %></div>
-        <% }); %>
-      <% } %>
-    </div>
+    <%- include('partials/navbar') %>
 
   <div class="container">
     <p>Welcome, <%= user.username %> (<%= user.role %>)</p>
@@ -151,5 +112,7 @@
     });
   </script>
   <script src="/js/ui.js"></script>
-</body>
+    <%- include('partials/footer') %>
+    <script src="/js/ui.js"></script>
+  </body>
 </html>
