@@ -157,3 +157,31 @@ If you want, I can now:
 - Or implement the flying-dot animation and navbar badge next.
 
 Which of these should I implement next? If you're ready, say "Proceed with DB cart and mock checkout" or "Proceed with animation and UI polish".
+
+---
+
+Recent updates (summary appended on Nov 20, 2025)
+
+- Bug fix: corrected syntax error in `Models/User.js` (missing comma between object methods) that caused a server crash on startup. Commit: `fix(user): correct object method separation in User model`.
+
+- Quantity availability: product listing now shows availability reduced by the user's current cart quantities so stock appears to decrease immediately after adding to cart. Implemented in `Controllers/ProductController.js` — `shopping`/`list` now subtract the user's cart quantities and expose `product.available` to views.
+
+- Add-to-cart UX upgraded:
+  - `Controllers/CartController.add` returns JSON for AJAX requests so the client can animate without a page reload.
+  - `public/js/ui.js` now intercepts add-to-cart forms, performs a `fetch` POST, and only shows the flying-dot animation and optimistic cart-badge update when the server responds with success.
+  - A top-slide notification banner (`.top-banner`) appears from the top on successful add-to-cart and auto-hides after ~3s; it can also be closed manually.
+
+- UI/Theme polish:
+  - Added `top-banner` CSS and minor theme tweaks in `public/css/theme.css` to match the minimal/mini-luxury aesthetic.
+  - Replaced the previous default avatar with a simple grayscale SVG at `public/images/default-avatar.svg` (low visual weight, greyscale).
+
+Notes on behavior and limitations:
+- The current cart is DB-backed (via `Models/CartItem`) so availability is computed using the items stored in the user's cart. This produces immediate availability changes after adding items. If you prefer a purely session-only reservation model (no DB writes until checkout), I can change the add-to-cart endpoint to keep items in `req.session.cart` until checkout instead.
+- The AJAX add-to-cart flow relies on the endpoint returning JSON when the client sets `Accept: application/json`. Non-AJAX requests still behave as before (server redirects to `/cart`).
+
+What I can do next (pick one):
+- Convert the cart entirely to session until checkout (if you prefer no DB writes during shopping).
+- Implement AJAX quantity updates inside the cart view (change quantities inline without reload).
+- Add server-side and client-side validation messages for adding to cart when stock is insufficient (currently server returns error and banner shows message).
+
+If you want me to add these updates to the repository history description or produce a short paragraph you can paste into your assignment, say which option you prefer and I'll append a final, copy-ready AI usage paragraph.

@@ -15,3 +15,16 @@ body{background:var(--bg);font-family:Inter, system-ui, -apple-system, 'Segoe UI
 .badge.bg-danger{background:#d9534f}
 .fly-dot{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--accent);z-index:9999;transition:transform 0.5s ease, opacity 0.5s ease}
 .alert{border-radius:6px}
+
+/* top-banner slide down notification */
+.top-banner{
+  position:fixed;
+  top:-100px;
+  left:0;
+  right:0;
+  z-index:2050;
+  transition: top 0.35s ease;
+  pointer-events: none;
+}
+.top-banner .container{pointer-events:auto}
+.top-banner.show{top:12px}

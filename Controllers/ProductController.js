@@ -17,7 +17,18 @@ const list = async (req, res) => {
     try {
         const products = await Product.getAll();
         const cartCount = await getCartCount(req);
-        res.render('index', { products, user: req.session?.user || null, cartCount });
+        // if user is logged in, subtract their cart quantities so availability reflects items in cart
+        let productsAdjusted = products;
+        if (req.session && req.session.user) {
+            const cartItems = await CartItem.getByUser(req.session.user.id);
+            const map = {};
+            cartItems.forEach(ci => { map[ci.product_id] = (map[ci.product_id] || 0) + ci.quantity; });
+            productsAdjusted = products.map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (map[p.id] || 0)) }));
+        } else {
+            productsAdjusted = products.map(p => ({ ...p, available: p.quantity || 0 }));
+        }
+
+        res.render('index', { products: productsAdjusted, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -96,7 +107,8 @@ const inventory = async (req, res) => {
     try {
         const products = await Product.getAll();
         const cartCount = await getCartCount(req);
-        res.render('inventory', { products, user: req.session?.user || null, cartCount });
+        const productsAdjusted = products.map(p => ({ ...p, available: p.quantity || 0 }));
+        res.render('inventory', { products: productsAdjusted, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -106,7 +118,16 @@ const shopping = async (req, res) => {
     try {
         const products = await Product.getAll();
         const cartCount = await getCartCount(req);
-        res.render('shopping', { products, user: req.session?.user || null, cartCount });
+        let productsAdjusted = products;
+        if (req.session && req.session.user) {
+            const cartItems = await CartItem.getByUser(req.session.user.id);
+            const map = {};
+            cartItems.forEach(ci => { map[ci.product_id] = (map[ci.product_id] || 0) + ci.quantity; });
+            productsAdjusted = products.map(p => ({ ...p, available: Math.max(0, (p.quantity || 0) - (map[p.id] || 0)) }));
+        } else {
+            productsAdjusted = products.map(p => ({ ...p, available: p.quantity || 0 }));
+        }
+        res.render('shopping', { products: productsAdjusted, user: req.session?.user || null, cartCount });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }

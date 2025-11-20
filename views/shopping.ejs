@@ -33,7 +33,7 @@
           <tr>
             <td><a href="/product/<%= products[i].id %>" ><%= products[i].productName %></a></td>
             <td><img src = "images/<%= products[i].image %>" width="20%"></td>
-            <td><%= products[i].quantity %></td>
+            <td><%= typeof products[i].available !== 'undefined' ? products[i].available : products[i].quantity %></td>
             <td>$<%= products[i].price.toFixed(2) %></td>
             <!-- <td>
               <select id="role" name="role" class="form-control" >
@@ -49,7 +49,7 @@
             <td>
               <div class="input-group" style="max-width:150px;margin:0 auto;">
                 <button class="btn btn-outline-secondary btn-decrement" type="button" data-target="qty-<%= products[i].id %>">-</button>
-                <input type="number" step="1" min="1" value="1" id="qty-<%= products[i].id %>" name="quantity" class="form-control qty-input" data-max="<%= products[i].quantity %>">
+                <input type="number" step="1" min="1" value="1" id="qty-<%= products[i].id %>" name="quantity" class="form-control qty-input" data-max="<%= typeof products[i].available !== 'undefined' ? products[i].available : products[i].quantity %>">
                 <button class="btn btn-outline-secondary btn-increment" type="button" data-target="qty-<%= products[i].id %>">+</button>
               </div>
             </td>
@@ -111,8 +111,7 @@
       });
     });
   </script>
+  <%- include('partials/footer') %>
   <script src="/js/ui.js"></script>
-    <%- include('partials/footer') %>
-    <script src="/js/ui.js"></script>
   </body>
 </html>

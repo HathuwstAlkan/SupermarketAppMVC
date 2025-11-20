@@ -38,6 +38,15 @@ const CartController = {
       }
 
       await CartItem.addOrUpdate(user.id, productId, qtyToAdd);
+      // get updated cart count
+      const cartCount = await CartItem.getCountByUser(user.id);
+
+      // if AJAX/JSON request, respond with JSON so client can animate without redirect
+      const accept = (req.get('Accept') || '').toLowerCase();
+      if (req.xhr || accept.includes('application/json')) {
+        return res.json({ success: true, qty: qtyToAdd, productName: product.productName, cartCount });
+      }
+
       req.flash('success', `Added ${qtyToAdd} × ${product.productName} to cart`);
       res.redirect('/cart');
     } catch (err) {
