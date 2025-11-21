@@ -79,7 +79,7 @@
         rows.forEach(u => {
           const el = document.createElement('div');
           el.className = 'd-flex justify-content-between align-items-center py-2 border-bottom';
-          el.innerHTML = `<div><strong>${u.username}</strong><br><small class="text-muted">${u.email} • ${u.role}</small></div><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-warning" data-email="${u.email}" onclick="prefillReset(this)">Reset</button><a class="btn btn-sm btn-outline-secondary" href="/admin/users/${u.id}">View</a></div>`;
+          el.innerHTML = `<div><strong>${u.username}</strong><br><small class="text-muted">${u.email} • ${u.role}</small></div><div class="d-flex gap-1"><button class="btn btn-sm btn-outline-danger" data-userid="${u.id}" onclick="forceResetPassword(this)"><i class="fa fa-lock"></i> Force Reset</button><button class="btn btn-sm btn-outline-warning" data-email="${u.email}" onclick="prefillReset(this)">Send OTP</button><a class="btn btn-sm btn-outline-secondary" href="/admin/users/${u.id}">View</a></div>`;
           container.appendChild(el);
         });
       } catch(e){ console.error('Failed to load users', e); }
@@ -167,6 +167,32 @@
         div.style.display = val === '' || div.textContent.includes(val) ? '' : 'none';
       });
     });
+
+    // Force password reset for a user (admin action)
+    async function forceResetPassword(btn) {
+      const userId = btn.getAttribute('data-userid');
+      if (!userId) return alert('User ID is missing');
+      
+      if (!confirm('Force this user to reset their password on next login?')) return;
+      
+      try {
+        const resp = await fetch(`/admin/force-reset/${userId}`, { 
+          method: 'POST', 
+          headers: {'Content-Type':'application/json'} 
+        });
+        const data = await resp.json();
+        
+        if (data.success) {
+          alert(data.message);
+          fetchUsers(); // Refresh user list
+        } else {
+          alert(data.error || 'Failed to force password reset');
+        }
+      } catch (e) { 
+        console.error(e); 
+        alert('Failed to force password reset'); 
+      }
+    }
 
     // init
     fetchUsers(); loadInventory();

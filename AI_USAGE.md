@@ -280,3 +280,185 @@ If you want me to add these updates to the repository history description or pro
 - If you prefer renaming the internal route (for code clarity) I can rename `app.get('/features', ...)` to `/home` and add redirects. Let me know.
 
 ---
+
+## 2025-11-21 (AI Handoff): Baton Relay - New AI Assistant Taking Over
+
+### Handoff Event
+- **Previous assistant** created comprehensive project brief (`BRIEF_FOR_AI.md`) documenting all work done, features implemented, known limitations, and future roadmap.
+- **Current assistant** (this AI) received handoff and is continuing development based on the outlined to-dos.
+- All changes committed and pushed to repository (commit: `chore: add project brief and commit current changes`).
+
+### User prompt (this turn)
+- Review the task breakdown and continue working on outstanding to-dos.
+- User confirmed lower priority items (product search, filtering, order history, wishlist) are future features.
+- Product reviews/ratings not needed for grocery/supermarket app.
+- **Important constraint**: All SMTP, OAuth, 2FA implementations should be MOCK with codes/tokens displayed in UI input boxes (no external services).
+
+### Assistant actions (this turn - in progress)
+- Created `task.md` artifact with organized task breakdown (High/Medium/Lower priority).
+- Updated task.md to mark future features and remove product reviews per user feedback.
+- Now documenting handoff in AI_USAGE.md and preparing to implement high-priority items.
+
+### Next planned implementations
+Starting with high-priority backend improvements:
+1. **Persist OTP in database** - Create `password_resets` table to replace in-memory storage
+2. **Mock SMTP/email service** - Display OTP codes in UI for demo/testing
+3. **Server-side pagination** - Improve admin inventory and user listing performance
+
+All implementations will be documented here with each conversation turn.
+
+---
+
+## 2025-11-22 (Turn 1): OTP Persistence & Mock Email Service Implementation
+
+### User prompt (this turn)
+- Approved implementation plan for OTP database persistence and mock email service
+- Confirmed all SMTP/OAuth/2FA should be mock implementations with codes displayed in UI
+
+### Assistant actions (this turn)
+1. **Created database migration**: `scripts/create_password_resets_table.sql`
+   - Adds `password_resets` table with columns: id, email, otp, expires_at, used, created_at
+   - Includes indexes for performance
+   - Optional MySQL event for auto-cleanup of expired OTPs
+
+2. **Created PasswordReset model**: `Models/PasswordReset.js`
+   - `create(email, otp, expiresAt)` - Insert new OTP record
+   - `findValid(email, otp)` - Find non-expired, unused OTP
+   - `markUsed(email, otp)` - Mark OTP as used
+   - `cleanupExpired()` - Remove expired records
+
+3. **Refactored AdminController**: Updated `Controllers/AdminController.js`
+   - Removed in-memory `otpStore` object
+   - Updated `requestReset()` to use database via PasswordReset model
+   - Returns mock email template with professional formatting
+   - Updated `confirmReset()` to validate OTP from database
+   - Marks OTP as used after successful password reset
+
+4. **Enhanced admin panel UI**: Updated `views/admin-panel.ejs`
+   - Added mock email display section (.mock-email-container)
+   - Shows formatted email with From/To/Subject headers
+   - Displays email body in monospace font
+   - OTP code in highlighted, copyable input field
+   - Shows expiration timestamp
+   - Pre-fills OTP in reset modal for easy testing
+
+5. **Added CSS styling**: Updated `public/css/theme.css`
+   - Professional email preview styles (.mock-email-container)
+   - Email header formatting (.mock-email-header)
+   - Email body with monospace font (.mock-email-body)
+   - Highlighted OTP display (.otp-code-display)
+   - Gradient background and bordered styling
+
+### Files changed/added (this turn)
+- **Added**: `Models/PasswordReset.js`, `scripts/create_password_resets_table.sql`
+- **Modified**: `Controllers/AdminController.js`, `views/admin-panel.ejs`, `public/css/theme.css`
+
+### New Features Implemented
+- ✅ **Database-backed OTP storage** - Replaces in-memory storage for production safety
+- ✅ **Mock email display** - Shows formatted email template in admin panel UI
+- ✅ **Professional email template** - Proper From/To/Subject headers and body formatting
+- ✅ **OTP expiration tracking** - 10-minute expiry with database persistence
+- ✅ **Used OTP tracking** - Prevents OTP reuse via `used` flag
+
+### Migration Instructions
+To apply the database changes, run this SQL in MySQL Workbench:
+```sql
+-- Copy and paste contents of scripts/create_password_resets_table.sql
+-- OR run from command line if mysql client is available
+```
+
+### Testing Notes
+- Mock email appears immediately after clicking "Send OTP" in admin panel
+- OTP code is displayed in a highlighted input field (easy to copy)
+- OTP is also pre-filled in the reset modal for convenience
+- All OTP data persists across server restarts (database-backed)
+- Expired OTPs are automatically rejected by `findValid()` method
+
+---
+
+## 2025-11-22 (Turn 2): Phase 1 - Authentication & Password Management Complete
+
+### User prompt (this turn)
+- Approved comprehensive 6-phase implementation plan
+- Requested to proceed with Phase 1 implementation
+
+### Assistant actions (this turn)
+1. **Created database migration**: `scripts/add_password_reset_fields.sql`
+   - Added `reset_required` BOOLEAN flag for admin-forced resets
+   - Added `reset_token` and `reset_token_expires` for enhanced security (optional)
+
+2. **Created AuthController**: `Controllers/AuthController.js`
+   - `forgotPassword()` - User-initiated password reset with OTP
+   - `resetPassword()` - Confirm OTP and update password
+   - `forcePasswordReset()` - Admin force-reset endpoint
+   - `generateOtp()` - 6-digit OTP generation
+   - Returns mock email display for all password reset requests
+
+3. **Created middleware**: `middleware/checkPasswordReset.js`
+   - Intercepts all requests to check `reset_required` flag
+   - Redirects to `/reset-password?forced=true` if flag set
+   - Exempts auth routes to prevent infinite loops
+   - Stores intended destination in session
+
+4. **Created user-facing views**:
+   - `views/forgot-password.ejs` - User forgot password page with mock email display
+   - `views/reset-password.ejs` - OTP confirmation and new password entry page
+   - Detects forced reset and shows appropriate warning message
+
+5. **Updated app.js**:
+   - Added `express.json()` middleware for AJAX requests
+   - Integrated `checkPasswordReset` middleware globally
+   - Added routes: `/forgot-password`, `/reset-password`, `/auth/forgot-password`, `/auth/reset-password`
+   - Added admin route: `/admin/force-reset/:userId`
+   - Updated login flow to check `reset_required` flag after successful authentication
+
+6. **Enhanced admin panel**: `views/admin-panel.ejs`
+   - Added "Force Reset" button to each user in user list
+   - Implemented `forceResetPassword()` JavaScript function
+   - Admin can now force users to reset password on next login
+
+7. **Updated login modal**: `views/partials/login-modal.ejs`
+   - Added "Forgot your password?" link below sign-up link
+   - Links to `/forgot-password` page
+
+### Files changed/added (this turn)
+- **Added**: `Controllers/AuthController.js`, `middleware/checkPasswordReset.js`, `scripts/add_password_reset_fields.sql`, `views/forgot-password.ejs`, `views/reset-password.ejs`
+- **Modified**: `app.js`, `views/admin-panel.ejs`, `views/partials/login-modal.ejs`
+
+### New Features Implemented (Phase 1 Complete ✅)
+- ✅ **User forgot password flow** - Complete with mock email display
+- ✅ **Admin force password reset** - Mark users for mandatory reset on next login
+- ✅ **Password reset middleware** - Automatic detection and redirection
+- ✅ **Unified OTP system** - Both user and admin resets use same OTP infrastructure
+- ✅ **Mock email display** - Professional email preview for all password reset flows
+- ✅ **Session-aware redirects** - Users returned to intended destination after forced reset
+
+### Migration Instructions
+Run these SQL migrations in MySQL Workbench:
+```sql
+-- Migration 1: OTP storage (from previous turn)
+-- Run: scripts/create_password_resets_table.sql
+
+-- Migration 2: Force reset flags (this turn)
+-- Run: scripts/add_password_reset_fields.sql
+```
+
+### Testing Flow
+**User Forgot Password**:
+1. Go to `/login` → Click "Forgot your password?"
+2. Enter email → See mock email display with OTP
+3. Click "Continue to Reset Password" or go to `/reset-password`
+4. Enter email, OTP, new password → Success
+
+**Admin Force Reset**:
+1. Admin goes to `/admin-panel`
+2. Click "Force Reset" button for a user
+3. That user's next login redirects to `/reset-password?forced=true`
+4. User must reset password before accessing the app
+
+**OTP Validation**:
+- Works for both user self-reset and admin-initiated reset
+- 10-minute expiry enforced
+- One-time use (marked as `used` in database)
+
+---

@@ -8,6 +8,7 @@ const db = require('./db');
 const User = require('./Models/User');
 const Product = require('./Models/Product');
 const CartItem = require('./Models/CartItem');
+const AuthController = require('./Controllers/AuthController');
 
 // Import product controller only (like StudentAppMVC)
 const productController = require('./Controllers/ProductController');
@@ -27,6 +28,7 @@ const upload = multer({ storage });
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // Parse JSON bodies for AJAX requests
 app.use(session({
     secret: 'secret',
     resave: false,
@@ -38,6 +40,10 @@ app.use((req, res, next) => {
     res.locals.user = req.session?.user || null;
     next();
 });
+
+// Password reset middleware - check if user needs to reset password
+const checkPasswordReset = require('./middleware/checkPasswordReset');
+app.use(checkPasswordReset);
 
 // expose flash messages and cart count to views
 app.use(async (req, res, next) => {
@@ -114,6 +120,12 @@ app.post('/login', async (req, res) => {
         if (user) {
             req.session.user = user;
             req.flash('success', 'Login successful!');
+            
+            // Check if user is required to reset password
+            if (user.reset_required) {
+                return res.redirect('/reset-password?forced=true');
+            }
+            
             // if we stored a returnTo path (protected page), redirect there first
             if (req.session.returnTo) {
                 const target = req.session.returnTo;
@@ -132,6 +144,19 @@ app.post('/login', async (req, res) => {
         res.redirect('/?mode=login');
     }
 });
+
+// --- PASSWORD RESET ROUTES ---
+app.get('/forgot-password', (req, res) => {
+    res.render('forgot-password', { user: req.session?.user || null });
+});
+
+app.get('/reset-password', (req, res) => {
+    const forced = req.query.forced || 'false';
+    res.render('reset-password', { user: req.session?.user || null, forced });
+});
+
+app.post('/auth/forgot-password', AuthController.forgotPassword.bind(AuthController));
+app.post('/auth/reset-password', AuthController.resetPassword.bind(AuthController));
 
 // Product routes (similar to StudentAppMVC)
 // Make `/home` the canonical landing. Redirect root `/` to `/home` for clarity.
@@ -252,6 +277,7 @@ app.get('/admin-panel', checkAuthenticated, checkAdmin, (req, res) => {
 // Admin user reset endpoints (AJAX)
 app.post('/admin/request-reset', checkAuthenticated, checkAdmin, adminController.requestReset);
 app.post('/admin/confirm-reset', checkAuthenticated, checkAdmin, adminController.confirmReset);
+app.post('/admin/force-reset/:userId', checkAuthenticated, checkAdmin, AuthController.forcePasswordReset.bind(AuthController));
 
 // Logout
 app.get('/logout', (req, res) => {

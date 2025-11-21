@@ -1,4 +1,4 @@
-# SupermarketAppMVC
+# Supermarket MVC
 
 A small Node.js + Express MVC supermarket demo application built with EJS views.
 

@@ -1,4 +1,4 @@
--- Workbench-friendly schema for SupermarketAppMVC
+-- Workbench-friendly schema for Supermarket MVC
 -- Copy-paste into MySQL Workbench and run. This script uses only supported statements.
 -- WARNING: This script creates tables if they do not exist. It does NOT DROP existing tables.
 -- If you previously partially created tables and want a clean recreate, drop them manually in this order first:
