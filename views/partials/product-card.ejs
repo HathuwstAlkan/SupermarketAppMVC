@@ -1,6 +1,6 @@
 <div class="product-card card">
   <div class="card-img-top position-relative">
-    <img src="/images/<%= product.image ? product.image : 'misc/no-image.svg' %>" class="img-fluid" alt="<%= product.productName %>" style="height:160px;object-fit:cover;">
+    <img src="/images/<%= product.image ? 'products/' + product.image : 'misc/no-image.svg' %>" class="img-fluid" alt="<%= product.productName %>" style="height:160px;object-fit:cover;">
     <% if (product.featured || product.deal) { %>
       <span class="promo-badge position-absolute top-0 start-0 m-2"><%= product.deal ? 'Deal' : 'Featured' %></span>
     <% } %>

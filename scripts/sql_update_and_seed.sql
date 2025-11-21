@@ -10,6 +10,12 @@ ALTER TABLE products
   ADD COLUMN bestBefore DATE DEFAULT NULL,
   ADD COLUMN deal TINYINT(1) DEFAULT 0;
 
+-- Add perishable/expiry support: some items use `bestBefore`, others can use `expiry`.
+-- `perishable` is a flag for UI/logic; `expiry` can be used if you prefer that column name.
+ALTER TABLE products
+  ADD COLUMN perishable TINYINT(1) DEFAULT 0,
+  ADD COLUMN expiry DATE DEFAULT NULL;
+
 -- 2) Seed product data (100 rows). If you already have some products, consider cleaning duplicates or using INSERT ... ON DUPLICATE KEY UPDATE.
 -- The following INSERT assumes your `products` table columns order accepts: (productName, quantity, price, image, category, featured, brand, bestBefore, deal)
 

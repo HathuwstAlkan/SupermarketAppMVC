@@ -17,7 +17,7 @@
             <% featured.forEach((p, idx) => { %>
               <div class="carousel-item <%= idx === 0 ? 'active' : '' %>">
                 <a href="/product/<%= p.id %>">
-                  <img src="/images/<%= p.image ? p.image : 'misc/no-image.svg' %>" class="d-block w-100" alt="<%= p.productName %>" style="height:320px;object-fit:cover;">
+                  <img src="/images/<%= p.image ? 'products/' + p.image : 'misc/no-image.svg' %>" class="d-block w-100" alt="<%= p.productName %>" style="height:320px;object-fit:cover;">
                 </a>
                 <div class="carousel-caption d-none d-md-block text-start" style="background:rgba(0,0,0,0.25);border-radius:8px;left:10%;right:60%;padding:1rem;">
                   <h5><%= p.productName %> <span class="badge bg-warning text-dark"><%= p.deal ? 'Deal' : 'Featured' %></span></h5>

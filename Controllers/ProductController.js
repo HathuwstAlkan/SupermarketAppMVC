@@ -37,10 +37,15 @@ const list = async (req, res) => {
         });
 
         // featured products for landing/carousel
-        const featured = products.filter(p => p.featured).slice(0, 8);
+        const featured = products.filter(p => p.featured);
 
         const mode = req.query.mode || null;
-        res.render('index', { categories, featured, user: req.session?.user || null, cartCount, mode });
+        // If /features or /home, render `featured.ejs` (landing carousel); else render index
+        if (req.path === '/features' || req.path === '/home') {
+            res.render('featured', { featured, user: req.session?.user || null, cartCount });
+        } else {
+            res.render('index', { categories, featured: featured.slice(0,8), user: req.session?.user || null, cartCount, mode });
+        }
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -82,9 +87,16 @@ const add = async (req, res) => {
     try {
         const productData = {
             productName: req.body.name,
-            quantity: req.body.quantity,
-            price: req.body.price,
-            image: req.file ? req.file.filename : null
+            quantity: parseInt(req.body.quantity,10) || 0,
+            price: parseFloat(req.body.price) || 0,
+            image: req.file ? req.file.filename : null,
+            category: req.body.category || null,
+            featured: req.body.featured ? 1 : 0,
+            brand: req.body.brand || null,
+            bestBefore: req.body.bestBefore || null,
+            deal: req.body.deal ? 1 : 0,
+            perishable: req.body.perishable ? 1 : 0,
+            expiry: req.body.expiry || null
         };
         await Product.add(productData);
         res.redirect('/');
@@ -98,9 +110,16 @@ const update = async (req, res) => {
         const id = req.params.id;
         const productData = {
             productName: req.body.name,
-            quantity: req.body.quantity,
-            price: req.body.price,
-            image: req.file ? req.file.filename : req.body.currentImage
+            quantity: parseInt(req.body.quantity,10) || 0,
+            price: parseFloat(req.body.price) || 0,
+            image: req.file ? req.file.filename : req.body.currentImage,
+            category: req.body.category || null,
+            featured: req.body.featured ? 1 : 0,
+            brand: req.body.brand || null,
+            bestBefore: req.body.bestBefore || null,
+            deal: req.body.deal ? 1 : 0,
+            perishable: req.body.perishable ? 1 : 0,
+            expiry: req.body.expiry || null
         };
         const ok = await Product.update(id, productData);
         if (!ok) return res.status(404).render('error', { error: 'Product not found' });

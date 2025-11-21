@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Admin Panel</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <%- include('partials/navbar') %>
+  <div class="container mt-4">
+    <h2>Admin Panel</h2>
+    <p>Manage users, reset passwords, and product inventory.</p>
+    <div class="row">
+      <div class="col-md-6">
+        <h4>User Management</h4>
+        <div class="mb-3 d-flex gap-2">
+          <input id="user-search" class="form-control" placeholder="Search by name or email">
+          <button id="user-refresh" class="btn btn-sm btn-outline-primary">Refresh</button>
+        </div>
+        <div id="users-list" style="max-height:420px; overflow:auto; border:1px solid rgba(0,0,0,0.04); padding:8px; border-radius:8px"></div>
+      </div>
+      <div class="col-md-6">
+        <h4>Password Reset (Demo)</h4>
+        <form id="reset-form" class="mb-3 d-flex gap-2">
+          <input type="email" class="form-control" id="reset-email" placeholder="User email" required>
+          <button type="button" class="btn btn-warning" id="send-otp">Send OTP</button>
+        </form>
+        <div class="mt-3">
+          <h5>Inventory Quick Search</h5>
+          <div class="d-flex gap-2 mb-2">
+            <input id="prod-search" class="form-control" placeholder="Search products">
+            <select id="prod-filter" class="form-select" style="max-width:160px">
+              <option value="">All categories</option>
+            </select>
+          </div>
+          <div id="admin-inventory" style="max-height:320px; overflow:auto; border:1px solid rgba(0,0,0,0.04); padding:8px; border-radius:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('partials/footer') %>
+  <div class="modal fade" id="otpModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Reset Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="otp-info">OTP has been sent to the registered email.<br><small class="text-muted">For demo, an OTP will be shown in the response.</small></p>
+          <form id="otp-form">
+            <input type="hidden" id="otp-email">
+            <div class="mb-2">
+              <label class="form-label">Enter OTP</label>
+              <input type="text" class="form-control" id="otp-input" maxlength="6" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" id="new-password" minlength="6" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" id="confirm-password" minlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Fetch and render users
+    async function fetchUsers(q=''){
+      try{
+        const resp = await fetch('/admin/users');
+        const data = await resp.json();
+        const rows = data.data.rows || [];
+        const container = document.getElementById('users-list');
+        container.innerHTML = '';
+        rows.forEach(u => {
+          const el = document.createElement('div');
+          el.className = 'd-flex justify-content-between align-items-center py-2 border-bottom';
+          el.innerHTML = `<div><strong>${u.username}</strong><br><small class="text-muted">${u.email} • ${u.role}</small></div><div class="d-flex gap-2"><button class="btn btn-sm btn-outline-warning" data-email="${u.email}" onclick="prefillReset(this)">Reset</button><a class="btn btn-sm btn-outline-secondary" href="/admin/users/${u.id}">View</a></div>`;
+          container.appendChild(el);
+        });
+      } catch(e){ console.error('Failed to load users', e); }
+    }
+
+    function prefillReset(btn){
+      const email = btn.getAttribute('data-email');
+      document.getElementById('reset-email').value = email;
+      sendOtp();
+    }
+
+    document.getElementById('user-refresh').addEventListener('click', ()=>fetchUsers());
+    document.getElementById('user-search').addEventListener('input', (e)=>{
+      // simple client-side search by hiding non-matching entries
+      const q = e.target.value.toLowerCase();
+      Array.from(document.getElementById('users-list').children).forEach(div => {
+        div.style.display = div.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    // send OTP to admin-reset endpoint
+    async function sendOtp(){
+      const email = document.getElementById('reset-email').value;
+      if(!email) return alert('Enter an email');
+      try{
+        const resp = await fetch('/admin/request-reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+        const data = await resp.json();
+        if(!data.success) return alert(data.error || 'Failed');
+        // show modal and place demoOtp in info for demo
+        document.getElementById('otp-info').innerHTML = `OTP sent to ${email} (demo). <small class="text-muted">OTP: <b>${data.demoOtp || '—'}</b></small>`;
+        document.getElementById('otp-email').value = email;
+        var modal = new bootstrap.Modal(document.getElementById('otpModal'));
+        modal.show();
+      } catch(e){ console.error(e); alert('Failed to request OTP'); }
+    }
+
+    document.getElementById('send-otp').addEventListener('click', sendOtp);
+
+    document.getElementById('otp-form').onsubmit = async function(e){
+      e.preventDefault();
+      const email = document.getElementById('otp-email').value;
+      const otp = document.getElementById('otp-input').value;
+      const np = document.getElementById('new-password').value;
+      const cp = document.getElementById('confirm-password').value;
+      if(np.length < 6) return alert('Password too short');
+      if(np !== cp) return alert('Passwords do not match');
+      try{
+        const resp = await fetch('/admin/confirm-reset', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email, otp, newPassword: np }) });
+        const data = await resp.json();
+        if(!data.success) return alert(data.error || 'Failed');
+        alert('Password reset successful');
+        bootstrap.Modal.getInstance(document.getElementById('otpModal')).hide();
+      } catch(e){ console.error(e); alert('Failed to reset'); }
+    };
+
+    // Simple admin inventory quick-load
+    async function loadInventory(){
+      try{
+        const resp = await fetch('/api/products');
+        const data = await resp.json();
+        const list = document.getElementById('admin-inventory');
+        list.innerHTML = '';
+        (data.data || []).forEach(p=>{
+          const div = document.createElement('div');
+          div.className = 'd-flex align-items-center justify-content-between py-2 border-bottom';
+          div.innerHTML = `<div><img src="/images/${p.image ? 'products/'+p.image : 'misc/no-image.svg'}" width="56" class="me-2" style="object-fit:cover;border-radius:6px"> <strong>${p.productName}</strong><br><small class="text-muted">${p.category || ''} • ${p.brand || ''}</small></div><div><a class="btn btn-sm btn-outline-primary me-2" href="/updateProduct/${p.id}"><i class="fa fa-edit"></i></a><button class="btn btn-sm btn-outline-danger" onclick="if(confirm('Delete?')) location.href='/deleteProduct/${p.id}'"><i class="fa fa-trash"></i></button></div>`;
+          list.appendChild(div);
+        });
+        // populate categories
+        const cats = Array.from(new Set((data.data||[]).map(p=>p.category||'Uncategorized'))).sort();
+        const sel = document.getElementById('prod-filter');
+        sel.innerHTML = '<option value="">All categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+      } catch(e){ console.error('Failed to load inventory', e); }
+    }
+
+    document.getElementById('prod-search').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase();
+      Array.from(document.getElementById('admin-inventory').children).forEach(div=>{
+        div.style.display = div.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('prod-filter').addEventListener('change', e=>{
+      const val = e.target.value;
+      Array.from(document.getElementById('admin-inventory').children).forEach(div=>{
+        div.style.display = val === '' || div.textContent.includes(val) ? '' : 'none';
+      });
+    });
+
+    // init
+    fetchUsers(); loadInventory();
+  </script>
+</body>
+</html>

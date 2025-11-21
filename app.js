@@ -1,3 +1,4 @@
+
 const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
@@ -63,8 +64,9 @@ app.use(async (req, res, next) => {
 // --- AUTH ROUTES (restore original behaviour) ---
 
 // redirect register GET to landing with mode=register
+// Dedicated onboarding page for login/register
 app.get('/register', (req, res) => {
-    res.redirect('/?mode=register');
+    res.render('onboarding', { mode: 'register', user: req.session?.user || null });
 });
 
 // handle register (now using User model)
@@ -79,12 +81,13 @@ app.post('/register', async (req, res) => {
         req.flash('error', 'Password should be at least 6 or more characters long');
         req.flash('formData', req.body);
         return res.redirect('/?mode=register');
+        return res.redirect('/register');
     }
 
     try {
         await User.create({ username, email, password, address, contact, role });
         req.flash('success', 'Registration successful! Please log in.');
-        res.redirect('/?mode=login');
+        res.redirect('/login');
     } catch (err) {
         console.error(err);
         req.flash('error', 'Registration failed');
@@ -95,7 +98,7 @@ app.post('/register', async (req, res) => {
 
 // redirect login GET to landing with mode=login
 app.get('/login', (req, res) => {
-    res.redirect('/?mode=login');
+    res.render('onboarding', { mode: 'login', user: req.session?.user || null });
 });
 
 // handle login (now using User model)
@@ -121,7 +124,7 @@ app.post('/login', async (req, res) => {
             else res.redirect('/inventory');
         } else {
             req.flash('error', 'Invalid email or password.');
-            res.redirect('/?mode=login');
+            res.redirect('/login');
         }
     } catch (err) {
         console.error(err);
@@ -131,8 +134,8 @@ app.post('/login', async (req, res) => {
 });
 
 // Product routes (similar to StudentAppMVC)
-// Home -> features/catalog for both guests and authenticated users
-app.get('/', (req, res, next) => productController.list(req, res, next));
+// Make `/home` the canonical landing. Redirect root `/` to `/home` for clarity.
+app.get('/', (req, res) => res.redirect('/home'));
 app.get('/product/:id', productController.getById);
 app.get('/products/:category', productController.byCategory);
 app.get('/addProduct', (req, res) => res.render('addProduct'));
@@ -161,8 +164,20 @@ app.get('/inventory', checkAuthenticated, checkAdmin, productController.inventor
 // allow guests to browse the shopping catalog and featured shelves
 app.get('/shopping', productController.shopping);
 
-// dedicated features/landing route (always shows featured shelves)
-app.get('/features', productController.list);
+// dedicated landing routes: /home is the public-friendly alias for featured shelves
+app.get('/home', productController.list);
+// keep /features as a compatibility alias that redirects to /home
+app.get('/features', (req, res) => res.redirect('/home'));
+
+// API: return products as JSON for admin quick-load
+app.get('/api/products', async (req, res) => {
+    try {
+        const products = await Product.getAllExtended();
+        res.json({ success: true, data: products });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // --- Cart / Checkout / Orders / logout routes ---
 const cartController = require('./Controllers/CartController');
@@ -222,11 +237,21 @@ app.get('/orders', checkAuthenticated, async (req, res) => {
 });
 
 // Admin dashboard
-app.get('/admin', checkAuthenticated, checkAdmin, adminController.dashboard);
+app.get('/admin', checkAuthenticated, checkAdmin, adminController.dashboard); // legacy, redirect to /analytics
+app.get('/analytics', checkAuthenticated, checkAdmin, adminController.dashboard);
 app.get('/admin/stats', checkAuthenticated, checkAdmin, adminController.stats);
 app.get('/admin/users', checkAuthenticated, checkAdmin, adminController.users);
 app.get('/admin/revenue', checkAuthenticated, checkAdmin, adminController.revenue);
 app.get('/admin/engagement', checkAuthenticated, checkAdmin, adminController.engagement);
+
+// Admin Panel route (user management, password reset demo)
+app.get('/admin-panel', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('admin-panel', { user: req.session.user });
+});
+
+// Admin user reset endpoints (AJAX)
+app.post('/admin/request-reset', checkAuthenticated, checkAdmin, adminController.requestReset);
+app.post('/admin/confirm-reset', checkAuthenticated, checkAdmin, adminController.confirmReset);
 
 // Logout
 app.get('/logout', (req, res) => {

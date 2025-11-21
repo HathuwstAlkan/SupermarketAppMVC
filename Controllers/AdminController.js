@@ -1,5 +1,12 @@
 const db = require('../db');
 
+// Simple in-memory OTP store for demo/admin reset flows
+const otpStore = {};
+
+function genOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 const AdminController = {
   async dashboard(req, res) {
     // Render a simple admin dashboard page; charts will be populated via /admin/stats
@@ -51,6 +58,44 @@ const AdminController = {
       res.json({ success: true, data: { rows, total: cnt, page, limit } });
     } catch (err) {
       console.error('Admin users error', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  },
+
+  // Request a password reset (admin triggers OTP send to user's email)
+  async requestReset(req, res) {
+    try {
+      const email = (req.body.email || '').toLowerCase();
+      if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
+      const [rows] = await db.query('SELECT id, email FROM users WHERE email = ?', [email]);
+      if (!rows || !rows[0]) return res.status(404).json({ success: false, error: 'User not found' });
+      const otp = genOtp();
+      // store otp with expiry (10 minutes)
+      otpStore[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
+      // In production: send email. For demo, return masked notification.
+      console.log(`Demo OTP for ${email}: ${otp}`);
+      return res.json({ success: true, message: 'OTP sent (demo).', demoOtp: otp });
+    } catch (err) {
+      console.error('Request reset error', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  },
+
+  // Confirm reset: verify OTP and set new password
+  async confirmReset(req, res) {
+    try {
+      const { email, otp, newPassword } = req.body;
+      if (!email || !otp || !newPassword) return res.status(400).json({ success: false, error: 'Missing fields' });
+      const store = otpStore[email.toLowerCase()];
+      if (!store) return res.status(400).json({ success: false, error: 'No OTP requested' });
+      if (Date.now() > store.expires) { delete otpStore[email.toLowerCase()]; return res.status(400).json({ success: false, error: 'OTP expired' }); }
+      if (store.otp !== otp) return res.status(400).json({ success: false, error: 'Invalid OTP' });
+      // update password
+      await db.query('UPDATE users SET password = SHA1(?) WHERE email = ?', [newPassword, email]);
+      delete otpStore[email.toLowerCase()];
+      res.json({ success: true, message: 'Password reset successful (demo).' });
+    } catch (err) {
+      console.error('Confirm reset error', err);
       res.status(500).json({ success: false, error: err.message });
     }
   },

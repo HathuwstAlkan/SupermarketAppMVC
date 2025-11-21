@@ -32,6 +32,41 @@
         <input class="form-control" type="file" id="image" name="image" accept="image/*" required>
       </div>
 
+      <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <input type="text" class="form-control" id="category" name="category">
+      </div>
+
+      <div class="mb-3">
+        <label for="brand" class="form-label">Brand</label>
+        <input type="text" class="form-control" id="brand" name="brand">
+      </div>
+
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" value="1" id="featured" name="featured">
+        <label class="form-check-label" for="featured">Featured</label>
+      </div>
+
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" value="1" id="deal" name="deal">
+        <label class="form-check-label" for="deal">Deal (promotion)</label>
+      </div>
+
+      <div class="mb-3">
+        <label for="bestBefore" class="form-label">Best Before</label>
+        <input type="date" class="form-control" id="bestBefore" name="bestBefore">
+      </div>
+
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" value="1" id="perishable" name="perishable">
+        <label class="form-check-label" for="perishable">Perishable</label>
+      </div>
+
+      <div class="mb-3">
+        <label for="expiry" class="form-label">Expiry (alternative)</label>
+        <input type="date" class="form-control" id="expiry" name="expiry">
+      </div>
+
       <div class="d-grid">
         <button type="submit" class="btn btn-primary">Add Product</button>
       </div>

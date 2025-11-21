@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Featured Products</title>
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <%- include('partials/navbar') %>
+  <div class="container mt-4">
+    <!-- Hero banner -->
+    <div class="hero-banner rounded mb-4 p-4 text-white d-flex align-items-center" style="background:linear-gradient(90deg, rgba(15,76,92,0.95), rgba(20,90,102,0.92));">
+      <div class="me-4" style="flex:1">
+        <h1 class="mb-2" style="font-weight:800">Home & Featured</h1>
+        <p class="mb-0">Discover curated deals, limited-time promotions and fresh picks. Click any card to view details and add to cart.</p>
+      </div>
+      <div style="width:320px">
+        <div class="text-end">
+          <a href="/shopping" class="btn btn-light btn-lg">Explore All Products</a>
+        </div>
+      </div>
+    </div>
+    <h2 class="mb-3">Spotlight Deals</h2>
+    <% if (featured && featured.length) { %>
+      <div id="featuredCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <% featured.forEach((p, idx) => { %>
+            <div class="carousel-item <%= idx === 0 ? 'active' : '' %>">
+              <img src="/images/<%= p.image ? 'products/' + p.image : 'misc/no-image.svg' %>" class="d-block w-100" alt="<%= p.productName %>" style="height:320px;object-fit:cover;">
+              <div class="carousel-caption d-none d-md-block text-start" style="background:rgba(0,0,0,0.25);border-radius:8px;left:10%;right:60%;padding:1rem;">
+                <h5><%= p.productName %> <span class="badge bg-warning text-dark"><%= p.deal ? 'Deal' : 'Featured' %></span></h5>
+                <p class="mb-0">$<%= Number(p.price || 0).toFixed(2) %> — <%= p.category || '' %></p>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    <% } %>
+
+    <!-- Promotions row -->
+    <div class="row g-3 my-4">
+      <div class="col-md-4">
+        <div class="p-3 promo-card rounded" style="background:linear-gradient(180deg,#fff7e8,#f7f3ee);">
+          <h5>Limited Time Offers</h5>
+          <p class="mb-0 small text-muted">Up to 30% off selected perishables. Check 'Deal' badges on product cards.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 promo-card rounded" style="background:linear-gradient(180deg,#eef9f9,#f7f3ee);">
+          <h5>Fresh Picks</h5>
+          <p class="mb-0 small text-muted">New arrivals from local vendors — best before dates highlighted for perishables.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 promo-card rounded" style="background:linear-gradient(180deg,#fff4f4,#f7f3ee);">
+          <h5>Member Benefits</h5>
+          <p class="mb-0 small text-muted">Sign up to collect reward points and exclusive coupons.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Whatbot placeholder -->
+    <button id="whatbot" class="btn btn-primary rounded-circle position-fixed" style="right:18px;bottom:18px;width:56px;height:56px;z-index:2200;">
+      <i class="fa fa-comments" aria-hidden="true"></i>
+    </button>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <% (featured || []).forEach(p => { %>
+        <div class="col">
+          <%- include('partials/product-card', { product: p, user: user }) %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <%- include('partials/footer') %>
+</body>
+</html>

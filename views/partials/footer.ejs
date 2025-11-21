@@ -1,18 +1,25 @@
-<footer class="site-footer mt-5 py-4 text-muted">
+<footer class="site-footer mt-5 py-4">
   <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
     <div class="mb-2 mb-md-0">
-      <small>&copy; <%= new Date().getFullYear() %> Supermarket App — built for CA1</small>
+      <strong>Supermarket App</strong>
+      <div><small>&copy; <%= new Date().getFullYear() %> — built for CA1</small></div>
     </div>
-    <div>
-      <% if (!user) { %>
-        <a class="footer-link me-3 open-login" href="#">Login</a>
-        <a class="footer-link me-3" href="/shopping">Products</a>
-        <a class="footer-link" href="/?mode=register">Register</a>
-      <% } else { %>
-        <a class="footer-link me-3" href="/shopping">Products</a>
-        <a class="footer-link me-3" href="/orders">My Orders</a>
-        <a class="footer-link" href="/profile">Profile</a>
-      <% } %>
+    <div class="d-flex align-items-center">
+      <form class="d-flex me-3" onsubmit="event.preventDefault(); alert('Subscribed (demo)')">
+        <input class="form-control form-control-sm newsletter-input" placeholder="Subscribe for deals" aria-label="Email">
+        <button class="btn btn-sm btn-warning ms-2" type="submit">Join</button>
+      </form>
+      <div>
+        <% if (!user) { %>
+          <a class="footer-link me-3 open-login" href="#">Login</a>
+          <a class="footer-link me-3" href="/shopping">Products</a>
+          <a class="footer-link" href="/?mode=register">Register</a>
+        <% } else { %>
+          <a class="footer-link me-3" href="/shopping">Products</a>
+          <a class="footer-link me-3" href="/orders">My Orders</a>
+          <a class="footer-link" href="/profile">Profile</a>
+        <% } %>
+      </div>
     </div>
   </div>
 </footer>

@@ -19,7 +19,7 @@
         <div class="row gy-3 mt-3">
           <% if (product) { %>
             <div class="col-12 col-md-5">
-              <img src="/images/<%= product.image || 'default-avatar.svg' %>" class="img-fluid rounded" alt="<%= product.productName %>">
+              <img src="/images/<%= product.image ? 'products/' + product.image : 'misc/no-image.svg' %>" class="img-fluid rounded" alt="<%= product.productName %>">
             </div>
             <div class="col-12 col-md-7">
               <h3><%= product.productName %></h3>

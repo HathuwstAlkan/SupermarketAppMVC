@@ -4,7 +4,7 @@ const ProductModel = {
     async getAll() {
         // include extended columns where available
         try {
-            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products';
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal, COALESCE(perishable,0) as perishable, expiry FROM products';
             const [rows] = await db.query(sql);
             return rows.map(r => ({ ...r, featured: Number(r.featured), deal: Number(r.deal) }));
         } catch (err) {
@@ -16,7 +16,7 @@ const ProductModel = {
 
     async getAllExtended() {
         try {
-            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "Uncategorized") as category, COALESCE(featured, 0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products';
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "Uncategorized") as category, COALESCE(featured, 0) as featured, brand, bestBefore, COALESCE(deal,0) as deal, COALESCE(perishable,0) as perishable, expiry FROM products';
             const [rows] = await db.query(sql);
             return rows.map(r => ({ ...r, featured: Number(r.featured), deal: Number(r.deal) }));
         } catch (err) {
@@ -40,7 +40,7 @@ const ProductModel = {
 
     async getById(id) {
         try {
-            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products WHERE id = ?';
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal, COALESCE(perishable,0) as perishable, expiry FROM products WHERE id = ?';
             const [rows] = await db.query(sql, [id]);
             if (!rows || !rows[0]) return null;
             const r = rows[0];
@@ -54,15 +54,15 @@ const ProductModel = {
     },
 
     async add(product) {
-        const sql = 'INSERT INTO products (productName, quantity, price, image) VALUES (?, ?, ?, ?)';
-        const params = [product.productName, product.quantity, product.price, product.image];
+        const sql = 'INSERT INTO products (productName, quantity, price, image, category, featured, brand, bestBefore, deal, perishable, expiry) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        const params = [product.productName, product.quantity, product.price, product.image, product.category || null, product.featured ? 1 : 0, product.brand || null, product.bestBefore || null, product.deal ? 1 : 0, product.perishable ? 1 : 0, product.expiry || null];
         const [result] = await db.query(sql, params);
         return { insertId: result.insertId };
     },
 
     async update(id, product) {
-        const sql = 'UPDATE products SET productName = ?, quantity = ?, price = ?, image = ? WHERE id = ?';
-        const params = [product.productName, product.quantity, product.price, product.image, id];
+        const sql = 'UPDATE products SET productName = ?, quantity = ?, price = ?, image = ?, category = ?, featured = ?, brand = ?, bestBefore = ?, deal = ?, perishable = ?, expiry = ? WHERE id = ?';
+        const params = [product.productName, product.quantity, product.price, product.image, product.category || null, product.featured ? 1 : 0, product.brand || null, product.bestBefore || null, product.deal ? 1 : 0, product.perishable ? 1 : 0, product.expiry || null, id];
         const [result] = await db.query(sql, params);
         return result.affectedRows > 0;
     },

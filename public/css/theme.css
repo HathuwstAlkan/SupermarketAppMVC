@@ -64,6 +64,11 @@ body{
 .btn-outline-primary{border-color:var(--teal); color:var(--teal)}
 .btn-outline-primary:hover{background:rgba(15,76,92,0.06)}
 .badge.bg-danger{background:#d9534f}
+.navbar-brand .brand-logo{filter: drop-shadow(0 3px 6px rgba(0,0,0,0.18)); transition:transform 0.18s ease, filter 0.18s ease}
+.navbar-brand .brand-text{color:#fff; font-weight:800; margin-left:6px}
+.navbar-brand:hover .brand-logo{transform:translateY(-2px) scale(1.05); filter: brightness(1.06) saturate(1.05)}
+.navbar-brand:hover .brand-text{color:var(--gold)}
+.navbar-brand:focus, .navbar-brand:active{outline:none}
 .fly-dot{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--gold);z-index:9999;transition:transform 0.45s ease, opacity 0.35s ease}
 .alert{border-radius:6px}
 
@@ -114,6 +119,25 @@ body{
 .site-footer{position:relative; bottom:0; left:0; right:0; background:transparent}
 .footer-link{color:var(--muted); text-decoration:none}
 .footer-link:hover{color:var(--teal); text-decoration:underline}
+
+/* Hero banner for featured/home */
+.hero-banner{min-height:140px; display:flex; align-items:center; padding:1.5rem; border-radius:12px}
+.hero-banner h1{font-size:1.6rem; letter-spacing:0.4px}
+.promo-card h5{font-weight:700}
+
+/* Whatbot floating chat button */
+#whatbot{background:var(--gold); color:#1b1b1b; border:none; box-shadow:0 8px 24px rgba(15,76,92,0.12); display:flex; align-items:center; justify-content:center}
+#whatbot:hover{transform:translateY(-3px); box-shadow:0 14px 30px rgba(15,76,92,0.18)}
+
+/* Footer refinements */
+.site-footer{background:linear-gradient(90deg, rgba(247,243,238,0.98), rgba(230,223,214,0.98)); padding:1.25rem 0; border-top:1px solid rgba(0,0,0,0.04)}
+.site-footer small{color:var(--muted)}
+.site-footer .footer-link{color:var(--muted); margin-right:1rem}
+.site-footer .newsletter-input{max-width:320px}
+
+/* Onboarding card polish */
+.onboard-shell{background:linear-gradient(180deg, #f8fafb, var(--bg));}
+.onboard-card{border:1px solid rgba(15,76,92,0.04)}
 
 /* avatar edit overlay */
 .avatar-wrapper{position:relative; display:inline-block}

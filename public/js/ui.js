@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data || !data.product) throw new Error('No product data');
         const p = data.product;
         // populate modal
-        document.getElementById('pm-image').src = '/images/' + (p.image ? p.image : 'misc/no-image.svg');
+        document.getElementById('pm-image').src = '/images/' + (p.image ? 'products/' + p.image : 'misc/no-image.svg');
         document.getElementById('pm-title').textContent = p.productName || '';
         document.getElementById('pm-meta').textContent = (p.brand ? 'Brand: ' + p.brand + ' — ' : '') + (p.category ? 'Category: ' + p.category : '');
         document.getElementById('pm-price').textContent = '$' + (Number(p.price || 0).toFixed(2));

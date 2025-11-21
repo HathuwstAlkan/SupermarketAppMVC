@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('partials/head') %>
+  <title>Sign in or Register</title>
+  <style>
+    .onboard-shell{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg)}
+    .onboard-card{background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(15,76,92,0.10);padding:2.5rem 2rem;width:100%;max-width:420px;}
+    .onboard-tabs{display:flex;gap:1rem;margin-bottom:2rem;justify-content:center}
+    .onboard-tabs button{background:none;border:none;font-size:1.1rem;font-weight:600;color:var(--teal);padding:0.5rem 1.5rem;border-radius:8px;transition:background 0.2s}
+    .onboard-tabs button.active{background:var(--gold);color:#1b1b1b}
+  </style>
+</head>
+<body>
+  <div class="onboard-shell">
+    <div class="onboard-card">
+      <div class="onboard-tabs">
+        <button id="tab-login" class="active" onclick="showTab('login')">Sign in</button>
+        <button id="tab-register" onclick="showTab('register')">Sign up</button>
+      </div>
+      <div id="login-form" style="display:block">
+        <form action="/login" method="POST" class="mb-3">
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input name="email" type="email" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Sign in</button>
+        </form>
+      </div>
+      <div id="register-form" style="display:none">
+        <form action="/register" method="POST">
+          <div class="mb-2">
+            <label class="form-label">Username</label>
+            <input name="username" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input name="email" type="email" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" minlength="6" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Address</label>
+            <input name="address" class="form-control" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Contact</label>
+            <input name="contact" class="form-control" required>
+          </div>
+          <input type="hidden" name="role" value="user">
+          <button type="submit" class="btn btn-warning w-100">Sign up</button>
+        </form>
+      </div>
+      <div class="text-center mt-3">
+        <a href="/" class="footer-link">Back to home</a>
+      </div>
+      <%- include('partials/flashes') %>
+    </div>
+  </div>
+  <script>
+    function showTab(tab){
+      document.getElementById('login-form').style.display = tab==='login'?'block':'none';
+      document.getElementById('register-form').style.display = tab==='register'?'block':'none';
+      document.getElementById('tab-login').classList.toggle('active',tab==='login');
+      document.getElementById('tab-register').classList.toggle('active',tab==='register');
+    }
+    // Auto-switch tab if ?mode=register
+    (function(){
+      if(window.location.search.includes('mode=register')) showTab('register');
+    })();
+  </script>
+  <%- include('partials/footer') %>
+</body>
+</html>

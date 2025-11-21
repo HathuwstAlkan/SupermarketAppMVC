@@ -1,3 +1,35 @@
+## 2025-11-21 (Routing, UI & DB polish)
+
+### User request
+- Rename public landing to `/home` (keep `/features` as alias), improve featured/home UI with banners, promotions and a Whatbot placeholder; modernize footer and onboarding; add expiry/perishable fields to the products migration.
+
+### Assistant actions (this turn)
+1. Renamed the public landing route: added `app.get('/home', productController.list)` and made `/features` redirect to `/home`.
+2. Updated `ProductController.list` to treat `/home` and `/features` as the featured landing path.
+3. Enhanced `views/featured.ejs` with a hero banner, promotions row, and a floating 'Whatbot' chat placeholder button.
+4. Modernized the site footer (`views/partials/footer.ejs`) and included it on the onboarding page so it's not bare.
+5. Added CSS for the hero banner, promotions, Whatbot and footer refinements in `public/css/theme.css`.
+6. Extended the migration/seed SQL (`scripts/sql_update_and_seed.sql`) to add `perishable` and `expiry` columns.
+7. Updated `README.md` to reference `/home` and document the redirect from `/features`.
+
+### Files changed/added
+- Modified: `app.js`, `Controllers/ProductController.js`, `views/featured.ejs`, `views/onboarding.ejs`, `views/partials/footer.ejs`, `public/css/theme.css`, `scripts/sql_update_and_seed.sql`, `README.md`
+
+### Notes
+- Ajax add-to-cart functionality already exists in `public/js/ui.js` and the server-side `CartController.add` supports JSON responses. I left that integration intact; I can further polish the AJAX flow or make add-to-cart entirely non-blocking if you want.
+- The SQL migration now adds `perishable` and `expiry` columns so you can represent perishables in multiple ways; choose which column your queries should prefer (code currently reads `bestBefore`). I can update model queries to prefer `expiry` if you want that instead.
+
+### 2025-11-21 (Admin UX & scripting)
+
+- Admin password reset: added in-memory OTP demo endpoints (`POST /admin/request-reset`, `POST /admin/confirm-reset`) implemented in `Controllers/AdminController.js` and wired in `app.js`. The admin panel UI (`views/admin-panel.ejs`) now supports user listing, search and initiating password resets via the server endpoints.
+- Admin inventory: `views/inventory.ejs` and `views/admin-panel.ejs` now include client-side search, category filters, better columns (category, brand, bestBefore/expiry) and use the `misc/no-image.svg` placeholder for missing product images.
+- Category assignment script: added `scripts/assign_categories.js` — a helper that infers product categories from product names using a keyword map and updates the `products.category` field. Run with `node scripts/assign_categories.js`.
+
+### Notes / Next steps
+- Persist OTPs in a datastore (Redis or DB) for multi-instance safety rather than the current in-memory store.
+- For large inventories, implement server-side paginated search/filter endpoints rather than client-side filtering.
+- Consider running `scripts/assign_categories.js` and checking results in Workbench; adjust the mapping as needed for your catalog.
+
 AI Assistance and Project Change Log
 
 ---
@@ -213,11 +245,38 @@ If you want me to add these updates to the repository history description or pro
 - Added: `views/partials/register-modal.ejs`, `public/images/misc/no-image.svg`, `scripts/sql_update_and_seed.sql`
 - Created folders: `public/images/products/`, `public/images/misc/`, `public/images/brand/`
 
+
 ### Enhancements and bug fixes
 - Auth and register modals are now robust and user-friendly.
 - Product modal and product cards now always show correct info and never break on missing images.
 - DB schema and seed data are up-to-date and easy to apply in MySQL Workbench.
 - UI is visually coherent, modern, and responsive.
 - No duplicate or dead routes/pages remain.
+
+---
+
+## 2025-11-21 (UI polish): Rename 'features' to 'home' for users and improve branding
+
+### User request
+- Use a familiar label 'Home' instead of 'Features' for the landing/featured shelves in the UI. Keep the internal route (`/features`) as a functional alias but remove a redundant 'Features/Home' nav item since the brand/logo redirects to home.
+- Replace the plain logo with a themed SVG and fix inverted/white-on-hover behavior.
+- Improve the CSS theme to give the navbar/brand a richer look and hover transition.
+
+### Assistant actions (this turn)
+1. Updated `views/partials/navbar.ejs`:
+  - Brand now links to `/` (home). The brand markup uses `brand-logo` and `brand-text` classes for styling.
+  - Removed the separate 'Features' nav link for guests so clicking the logo returns users to home (no duplicate nav item).
+2. Updated `views/onboarding.ejs`: changed the footer link from 'Back to features' to 'Back to home' and point to `/`.
+3. Added a new themed logo at `public/images/logo.svg` (simple accessible SVG with deep-teal background and warm gold accent).
+4. Enhanced `public/css/theme.css` with logo/brand hover styles, improved contrast, and refined transitions to avoid inverted/white-on-hover issues.
+5. Added this summary and updated the changelog.
+
+### Files changed/added
+- Modified: `views/partials/navbar.ejs`, `views/onboarding.ejs`, `public/css/theme.css`
+- Added: `public/images/logo.svg`
+
+### Notes
+- The internal functional route `/features` remains for compatibility; visible labels and nav items were adjusted so the UI shows the brand as the primary home link.
+- If you prefer renaming the internal route (for code clarity) I can rename `app.get('/features', ...)` to `/home` and add redirects. Let me know.
 
 ---
