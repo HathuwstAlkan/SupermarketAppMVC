@@ -28,29 +28,42 @@ document.addEventListener('DOMContentLoaded', function(){
     }, { passive: false });
   });
 
-  // simple search and category filter
+  // simple search, category, brand and promo filters
   const search = document.getElementById('catalogSearch');
   const select = document.getElementById('catalogCategory');
+  const brandSelect = document.getElementById('catalogBrand');
+  const dealsOnly = document.getElementById('filterDeals');
+  const expiringOnly = document.getElementById('filterExpiring');
   function applyFilters(){
-    const q = search.value.trim().toLowerCase();
-    const cat = select.value;
+    const q = (search && search.value || '').trim().toLowerCase();
+    const cat = select ? select.value : 'all';
+    const brand = brandSelect ? brandSelect.value : 'all';
+    const deals = dealsOnly ? dealsOnly.checked : false;
+    const expiring = expiringOnly ? expiringOnly.checked : false;
     document.querySelectorAll('.category-shelf').forEach(section => {
       const title = section.querySelector('h3').textContent;
       if (cat !== 'all' && title !== cat) {
         section.style.display = 'none';
         return;
       }
-      // show/hide items by search
+      // show/hide items by search and additional filters
       let any = false;
       section.querySelectorAll('.shelf-item').forEach(item => {
-        const name = item.querySelector('.card-title').textContent.toLowerCase();
-        const match = !q || name.indexOf(q) !== -1;
+        const nameEl = item.querySelector('.card-title');
+        const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+        const matchesQuery = !q || name.indexOf(q) !== -1;
+        const itemBrand = (item.dataset.brand || '').toString();
+        const matchesBrand = (brand === 'all') || (itemBrand === brand);
+        const isDeal = item.dataset.deal === '1';
+        const isExpiring = item.dataset.expiring === '1';
+        const matchesDeals = !deals || isDeal;
+        const matchesExpiring = !expiring || isExpiring;
+        const match = matchesQuery && matchesBrand && matchesDeals && matchesExpiring;
         item.style.display = match ? '' : 'none';
         if (match) any = true;
       });
       section.style.display = any ? '' : 'none';
     });
   }
-  if (search) search.addEventListener('input', applyFilters);
-  if (select) select.addEventListener('change', applyFilters);
+  [search, select, brandSelect, dealsOnly, expiringOnly].forEach(el => { if (el) el.addEventListener('change', applyFilters); if (el && el.tagName === 'INPUT') el.addEventListener('input', applyFilters); });
 });

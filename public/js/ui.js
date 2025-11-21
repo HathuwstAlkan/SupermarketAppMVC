@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
   }
 
-  const cartIcon = document.querySelector('.fa-shopping-cart') || document.querySelector('#nav-cart-icon');
+  // prefer the navbar cart anchor if present
+  const cartIcon = document.querySelector('#nav-cart-icon') || document.querySelector('.fa-shopping-cart');
 
   // Intercept Add-to-Cart forms and POST via fetch so we can animate only on success
   document.querySelectorAll('.add-to-cart-form').forEach(form => {
@@ -70,6 +71,39 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+  
+  // quantity increment/decrement and input clamp handlers (works on product detail and catalog)
+  document.querySelectorAll('.btn-increment, .btn-decrement').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const max = parseInt(input.getAttribute('data-max'), 10) || 9999;
+      let val = parseInt(input.value, 10) || 1;
+      if (btn.classList.contains('btn-increment')) val += 1;
+      else val -= 1;
+      if (val < 1) val = 1;
+      if (val > max) val = max;
+      input.value = val;
+      // update hidden field in the same form (if present)
+      const hidden = document.getElementById('hidden-qty-' + targetId.replace('qty-',''));
+      if (hidden) hidden.value = val;
+    });
+  });
+
+  // ensure when numeric input changes manually we clamp and update hidden field
+  document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const max = parseInt(input.getAttribute('data-max'), 10) || 9999;
+      let val = parseInt(input.value, 10) || 1;
+      if (val < 1) val = 1;
+      if (val > max) val = max;
+      input.value = val;
+      const id = input.id.replace('qty-','');
+      const hidden = document.getElementById('hidden-qty-' + id);
+      if (hidden) hidden.value = val;
+    });
+  });
   // Auto-dismiss bootstrap alerts after 5 seconds
   try {
     document.querySelectorAll('.alert-dismissible').forEach(alertEl => {
@@ -85,6 +119,85 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (e) {
     // ignore if bootstrap isn't available
   }
+  
+  // intercept guest sign-in links (open modal) -- links with class `open-login`
+  document.querySelectorAll('a.open-login').forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      try {
+        const modalEl = document.getElementById('loginModal');
+        if (modalEl) {
+          const bs = new bootstrap.Modal(modalEl);
+          bs.show();
+        } else {
+          // fallback to navigating to landing
+          window.location.href = '/?mode=login';
+        }
+      } catch (e) { window.location.href = '/?mode=login'; }
+    });
+  });
+
+  // intercept guest sign-up links (open register modal)
+  document.querySelectorAll('a.open-register').forEach(a => {
+    a.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      try {
+        const modalEl = document.getElementById('registerModal');
+        if (modalEl) {
+          const bs = new bootstrap.Modal(modalEl);
+          bs.show();
+        } else {
+          window.location.href = '/?mode=register';
+        }
+      } catch (e) { window.location.href = '/?mode=register'; }
+    });
+  });
+
+  // Open product modal when clicking view on a product card
+  document.querySelectorAll('.open-product').forEach(btn => {
+    btn.addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      const id = btn.dataset.id;
+      if (!id) return;
+      try {
+        const resp = await fetch('/product/' + id + '?format=json', { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) throw new Error('Failed to load product');
+        const data = await resp.json();
+        if (!data || !data.product) throw new Error('No product data');
+        const p = data.product;
+        // populate modal
+        document.getElementById('pm-image').src = '/images/' + (p.image ? p.image : 'misc/no-image.svg');
+        document.getElementById('pm-title').textContent = p.productName || '';
+        document.getElementById('pm-meta').textContent = (p.brand ? 'Brand: ' + p.brand + ' — ' : '') + (p.category ? 'Category: ' + p.category : '');
+        document.getElementById('pm-price').textContent = '$' + (Number(p.price || 0).toFixed(2));
+        document.getElementById('pm-availability').innerHTML = 'Available: <strong>' + (p.available || p.quantity || 0) + '</strong>';
+        // set qty max
+        const pmQty = document.getElementById('pm-qty');
+        pmQty.setAttribute('data-max', (p.available || p.quantity || 0));
+        pmQty.value = 1;
+        document.getElementById('pm-hidden-qty').value = 1;
+        // wire form action
+        const form = document.getElementById('pm-add-form');
+        form.action = '/add-to-cart/' + p.id;
+        // show/hide add button depending on availability and auth
+        const addBtn = document.getElementById('pm-add-btn');
+        if ((p.available || p.quantity || 0) <= 0) {
+          addBtn.disabled = true;
+          addBtn.textContent = 'Out of stock';
+        } else {
+          addBtn.disabled = false;
+          addBtn.textContent = 'Add to cart';
+        }
+        // show modal
+        const modalEl = document.getElementById('productModal');
+        const bs = new bootstrap.Modal(modalEl);
+        bs.show();
+      } catch (e) {
+        console.error('Failed to open product modal', e);
+        showTopBanner('Failed to load product', 'danger');
+      }
+    });
+  });
   
   // top banner element helper
   function showTopBanner(message, type='success') {

@@ -2,21 +2,26 @@ const db = require('../db');
 
 const ProductModel = {
     async getAll() {
-        const sql = 'SELECT id, productName, quantity, price, image FROM products';
-        const [rows] = await db.query(sql);
-        return rows;
+        // include extended columns where available
+        try {
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products';
+            const [rows] = await db.query(sql);
+            return rows.map(r => ({ ...r, featured: Number(r.featured), deal: Number(r.deal) }));
+        } catch (err) {
+            const sql = 'SELECT id, productName, quantity, price, image FROM products';
+            const [rows] = await db.query(sql);
+            return rows.map(r => ({ ...r, category: '', featured: 0, brand: null, bestBefore: null, deal: 0 }));
+        }
     },
 
     async getAllExtended() {
-        // Try to select category and featured columns if they exist, otherwise fall back
         try {
-            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "Uncategorized") as category, COALESCE(featured, 0) as featured FROM products';
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "Uncategorized") as category, COALESCE(featured, 0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products';
             const [rows] = await db.query(sql);
-            return rows.map(r => ({ ...r, featured: Number(r.featured) }));
+            return rows.map(r => ({ ...r, featured: Number(r.featured), deal: Number(r.deal) }));
         } catch (err) {
-            // fallback: basic select
             const rows = await this.getAll();
-            return rows.map(r => ({ ...r, category: 'Uncategorized', featured: 0 }));
+            return rows.map(r => ({ ...r, category: 'Uncategorized', featured: 0, brand: null, bestBefore: null, deal: 0 }));
         }
     },
 
@@ -34,9 +39,18 @@ const ProductModel = {
     },
 
     async getById(id) {
-        const sql = 'SELECT id, productName, quantity, price, image FROM products WHERE id = ?';
-        const [rows] = await db.query(sql, [id]);
-        return rows[0];
+        try {
+            const sql = 'SELECT id, productName, quantity, price, image, COALESCE(category, "") as category, COALESCE(featured,0) as featured, brand, bestBefore, COALESCE(deal,0) as deal FROM products WHERE id = ?';
+            const [rows] = await db.query(sql, [id]);
+            if (!rows || !rows[0]) return null;
+            const r = rows[0];
+            return { ...r, featured: Number(r.featured), deal: Number(r.deal) };
+        } catch (e) {
+            // fallback to minimal select
+            const sql = 'SELECT id, productName, quantity, price, image FROM products WHERE id = ?';
+            const [rows] = await db.query(sql, [id]);
+            return rows[0] || null;
+        }
     },
 
     async add(product) {

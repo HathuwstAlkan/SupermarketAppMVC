@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="/">
+    <a class="navbar-brand d-flex align-items-center" href="/features">
       <img src="/images/logo.svg" alt="logo" width="28" height="28" style="margin-right:8px;">
       <span>Supermarket App</span>
     </a>
@@ -51,7 +51,14 @@
             </ul>
           </li>
         <% } else { %>
-          <!-- When not signed in, keep navbar minimal (brand only). Footer contains product/quick links. -->
+          <li class="nav-item me-2"><a class="nav-link" href="/features">Features</a></li>
+          <li class="nav-item me-2"><a class="nav-link" href="/shopping">Shop</a></li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-sm btn-outline-light open-login" href="#">Sign in</a>
+          </li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-sm btn-warning open-register" href="#">Sign up</a>
+          </li>
         <% } %>
       </ul>
     </div>
@@ -61,3 +68,5 @@
 </nav>
 
 <%- include('flashes') %>
+<%- include('login-modal') %>
+<%- include('register-modal') %>

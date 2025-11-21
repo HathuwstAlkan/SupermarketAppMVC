@@ -39,7 +39,8 @@ const list = async (req, res) => {
         // featured products for landing/carousel
         const featured = products.filter(p => p.featured).slice(0, 8);
 
-        res.render('index', { categories, featured, user: req.session?.user || null, cartCount });
+        const mode = req.query.mode || null;
+        res.render('index', { categories, featured, user: req.session?.user || null, cartCount, mode });
     } catch (err) {
         res.status(500).render('error', { error: err.message, user: req.session?.user || null });
     }
@@ -49,20 +50,26 @@ const getById = async (req, res) => {
     try {
         const id = req.params.id;
         const product = await Product.getById(id);
-        if (!product) {
-            return res.status(404).render('error', { 
-                error: 'Product not found',
-                user: req.session.user || null
+            if (!product) {
+                return res.status(404).render('error', { 
+                    error: 'Product not found',
+                    user: req.session.user || null
+                });
+            }
+
+            // If client requests JSON (AJAX/modal), send JSON payload
+            const wantsJson = req.xhr || (req.get('Accept') || '').toLowerCase().includes('application/json') || req.query.format === 'json';
+            if (wantsJson) {
+                return res.json({ success: true, product });
+            }
+
+            const viewTemplate = req.path.includes('updateProduct') ? 'updateProduct' : 'product';
+            const cartCount = await getCartCount(req);
+            res.render(viewTemplate, { 
+                product,
+                user: req.session.user || null,
+                cartCount
             });
-        }
-        
-        const viewTemplate = req.path.includes('updateProduct') ? 'updateProduct' : 'product';
-        const cartCount = await getCartCount(req);
-        res.render(viewTemplate, { 
-            product,
-            user: req.session.user || null,
-            cartCount
-        });
     } catch (err) {
         res.status(500).render('error', { 
             error: err.message,
@@ -172,5 +179,6 @@ module.exports = {
     update,
     delete: remove,
     inventory,
-    shopping
+    shopping,
+    byCategory
 };

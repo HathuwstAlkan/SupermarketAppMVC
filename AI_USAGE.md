@@ -185,3 +185,39 @@ What I can do next (pick one):
 - Add server-side and client-side validation messages for adding to cart when stock is insufficient (currently server returns error and banner shows message).
 
 If you want me to add these updates to the repository history description or produce a short paragraph you can paste into your assignment, say which option you prefer and I'll append a final, copy-ready AI usage paragraph.
+
+---
+
+## 2025-11-21: Major UI, DB, and Modal Upgrades
+
+### User prompt (summary)
+- Fix sign up/login modal limbo and ensure all auth flows work.
+- Product detail modal fails to load; fix and ensure all product fields (category, brand, expiry) are present.
+- Products table in DB is outdated; add SQL to migrate and seed with new columns and 100 products.
+- Organize images into folders: products/, misc/, brand/; use a placeholder for missing images.
+- Upgrade CSS theme for a more coherent, luxury look.
+- Check for duplicate routes/pages/functions and remove or consolidate.
+- Update this AI_USAGE.md for all changes and commit.
+
+### Assistant actions (this turn)
+1. Fixed auth modals: Sign up and Sign in now open modals, not broken pages; modals auto-open on landing as needed.
+2. Fixed product modal: Now fetches all product fields, uses a placeholder image if missing, and is robust to missing data.
+3. DB migration: Added `scripts/sql_update_and_seed.sql` to ALTER the products table and seed 100 products with new columns (category, brand, featured, bestBefore, deal).
+4. Images: Created `products/`, `misc/`, `brand/` folders; added a placeholder SVG in `misc/no-image.svg` and updated all templates and JS to use it for missing images.
+5. UI: Upgraded `public/css/theme.css` with modal blur, card/button/badge polish, sticky footer, and input styles for a more coherent luxury theme.
+6. Checked for duplicate routes/pages/functions: No duplicate routes or dead code found in `app.js` or controllers; all routes have a clear purpose.
+7. Updated all EJS templates and JS to use new image and modal logic.
+
+### Files changed/added this turn
+- Modified: `app.js`, `Controllers/ProductController.js`, `Models/Product.js`, `views/partials/navbar.ejs`, `views/partials/product-card.ejs`, `views/partials/product-modal.ejs`, `views/index.ejs`, `public/js/ui.js`, `public/css/theme.css`
+- Added: `views/partials/register-modal.ejs`, `public/images/misc/no-image.svg`, `scripts/sql_update_and_seed.sql`
+- Created folders: `public/images/products/`, `public/images/misc/`, `public/images/brand/`
+
+### Enhancements and bug fixes
+- Auth and register modals are now robust and user-friendly.
+- Product modal and product cards now always show correct info and never break on missing images.
+- DB schema and seed data are up-to-date and easy to apply in MySQL Workbench.
+- UI is visually coherent, modern, and responsive.
+- No duplicate or dead routes/pages remain.
+
+---

@@ -1,0 +1,41 @@
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create an account</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/register" method="POST" class="row g-2">
+          <div class="col-12">
+            <label class="form-label">Username</label>
+            <input name="username" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Email</label>
+            <input name="email" type="email" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control" minlength="6" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Address</label>
+            <input name="address" class="form-control" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Contact</label>
+            <input name="contact" class="form-control" required>
+          </div>
+          <div class="col-12 d-none">
+            <!-- keep role hidden as 'user' by default -->
+            <input name="role" value="user">
+          </div>
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary">Sign up</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

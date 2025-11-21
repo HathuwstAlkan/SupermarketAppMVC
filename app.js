@@ -131,15 +131,10 @@ app.post('/login', async (req, res) => {
 });
 
 // Product routes (similar to StudentAppMVC)
-app.get('/', async (req, res, next) => {
-    // If user is not logged in, render landing page (login/register combined)
-    if (!req.session || !req.session.user) {
-        const mode = req.query.mode || 'login';
-        return res.render('landing', { user: null, mode });
-    }
-    return productController.list(req, res, next);
-});
+// Home -> features/catalog for both guests and authenticated users
+app.get('/', (req, res, next) => productController.list(req, res, next));
 app.get('/product/:id', productController.getById);
+app.get('/products/:category', productController.byCategory);
 app.get('/addProduct', (req, res) => res.render('addProduct'));
 app.post('/addProduct', upload.single('image'), productController.add);
 app.get('/updateProduct/:id', productController.getById);
@@ -163,7 +158,11 @@ const checkAdmin = (req, res, next) => {
 
 // --- add routes ---
 app.get('/inventory', checkAuthenticated, checkAdmin, productController.inventory);
-app.get('/shopping', checkAuthenticated, productController.shopping);
+// allow guests to browse the shopping catalog and featured shelves
+app.get('/shopping', productController.shopping);
+
+// dedicated features/landing route (always shows featured shelves)
+app.get('/features', productController.list);
 
 // --- Cart / Checkout / Orders / logout routes ---
 const cartController = require('./Controllers/CartController');

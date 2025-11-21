@@ -9,13 +9,13 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <title>Supermarket App</title>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <%- include('partials/navbar') %>
 
-  <div class="container mt-4">
+  <div class="container mt-4 app-main">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h2 class="mb-0">Catalog</h2>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center">
         <input id="catalogSearch" class="form-control form-control-sm" placeholder="Search products..." style="min-width:220px;">
         <select id="catalogCategory" class="form-select form-select-sm" style="max-width:200px;">
           <option value="all">All categories</option>
@@ -23,6 +23,23 @@
             <option value="<%= cat %>"><%= cat %></option>
           <% }) %>
         </select>
+        <select id="catalogBrand" class="form-select form-select-sm" style="max-width:180px;">
+          <option value="all">All brands</option>
+          <% // gather brands from categories map
+             const seenBrands = new Set();
+             Object.keys(categories).forEach(cat => categories[cat].forEach(p => { if (p.brand) seenBrands.add(p.brand); }));
+             Array.from(seenBrands).forEach(b => { %>
+               <option value="<%= b %>"><%= b %></option>
+          <% }) %>
+        </select>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="filterDeals">
+          <label class="form-check-label" for="filterDeals">Deals only</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="filterExpiring">
+          <label class="form-check-label" for="filterExpiring">Expiring soon</label>
+        </div>
       </div>
     </div>
 
@@ -32,9 +49,18 @@
         <div class="shelf position-relative">
           <button class="shelf-nav left btn btn-sm btn-light position-absolute" aria-label="Scroll left">&larr;</button>
           <div class="shelf-row d-flex gap-3 overflow-auto py-2 px-1">
-            <% categories[cat].forEach(p => { %>
-              <div class="shelf-item" style="min-width:200px;max-width:200px;">
-                <%- include('partials/product-card', { product: p }) %>
+            <% categories[cat].forEach(p => { 
+                 // compute expiring flag (bestBefore within 14 days or deal flag)
+                 let expiring = false;
+                 if (p.bestBefore) {
+                   const dd = new Date(p.bestBefore);
+                   const now = new Date();
+                   const diff = Math.ceil((dd - now) / (1000*60*60*24));
+                   if (diff <= 14) expiring = true;
+                 }
+            %>
+              <div class="shelf-item" style="min-width:200px;max-width:200px;" data-brand="<%= p.brand || '' %>" data-deal="<%= p.deal ? 1 : 0 %>" data-expiring="<%= expiring ? 1 : 0 %>">
+                <%- include('partials/product-card', { product: p, user: user }) %>
               </div>
             <% }) %>
           </div>

@@ -4,9 +4,15 @@
       <small>&copy; <%= new Date().getFullYear() %> Supermarket App — built for CA1</small>
     </div>
     <div>
-      <a class="footer-link me-3" href="/?mode=login&focus=login#auth">Login</a>
-      <a class="footer-link me-3" href="/?mode=login&focus=login#auth">Products</a>
-      <a class="footer-link" href="/?mode=register&focus=register#auth">Register</a>
+      <% if (!user) { %>
+        <a class="footer-link me-3 open-login" href="#">Login</a>
+        <a class="footer-link me-3" href="/shopping">Products</a>
+        <a class="footer-link" href="/?mode=register">Register</a>
+      <% } else { %>
+        <a class="footer-link me-3" href="/shopping">Products</a>
+        <a class="footer-link me-3" href="/orders">My Orders</a>
+        <a class="footer-link" href="/profile">Profile</a>
+      <% } %>
     </div>
   </div>
 </footer>
