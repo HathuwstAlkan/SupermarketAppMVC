@@ -261,8 +261,12 @@ app.get('/orders', checkAuthenticated, async (req, res) => {
     }
 });
 
-// Admin dashboard
-app.get('/admin', checkAuthenticated, checkAdmin, adminController.dashboard); // legacy, redirect to /analytics
+// Admin home dashboard (new)
+app.get('/admin', checkAuthenticated, checkAdmin, (req, res) => {
+    res.render('admin-home', { user: req.session.user });
+});
+
+// Analytics dashboard (moved from /admin)
 app.get('/analytics', checkAuthenticated, checkAdmin, adminController.dashboard);
 app.get('/admin/stats', checkAuthenticated, checkAdmin, adminController.stats);
 app.get('/admin/users', checkAuthenticated, checkAdmin, adminController.users);

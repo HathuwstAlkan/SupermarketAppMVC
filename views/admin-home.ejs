@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+  <title>Admin Home - Supermarket MVC</title>
+  <style>
+    .quick-action-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .quick-action-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .quick-action-card .card-body {
+      padding: 2rem;
+      text-align: center;
+    }
+    .quick-action-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: #0f4c5c;
+    }
+    .stats-overview {
+      background: linear-gradient(135deg, #0f4c5c 0%, #1a6b7e 100%);
+      color: white;
+      padding: 2rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin: 0;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <%- include('../partials/navbar') %>
+  <div class="container mt-4 flex-grow-1">
+    <h2 class="mb-4">Admin Dashboard</h2>
+    
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="row">
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stat-item">
+            <p class="stat-value" id="total-users">0</p>
+            <p class="stat-label">Total Users</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stat-item">
+            <p class="stat-value" id="total-products">0</p>
+            <p class="stat-label">Total Products</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stat-item">
+            <p class="stat-value" id="orders-today">0</p>
+            <p class="stat-label">Orders Today</p>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <div class="stat-item">
+            <p class="stat-value" id="low-stock">0</p>
+            <p class="stat-label">Low Stock Items</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <h4 class="mb-3">Quick Actions</h4>
+    <div class="row g-3 mb-4">
+      <div class="col-lg-3 col-md-6">
+        <div class="card quick-action-card" onclick="window.location.href='/analytics'">
+          <div class="card-body">
+            <i class="fa fa-chart-line quick-action-icon"></i>
+            <h5 class="card-title">Analytics</h5>
+            <p class="text-muted">View sales and performance metrics</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card quick-action-card" onclick="window.location.href='/admin-panel'">
+          <div class="card-body">
+            <i class="fa fa-cog quick-action-icon"></i>
+            <h5 class="card-title">Admin Panel</h5>
+            <p class="text-muted">Manage users, promotions & site settings</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card quick-action-card" onclick="window.location.href='/inventory'">
+          <div class="card-body">
+            <i class="fa fa-boxes quick-action-icon"></i>
+            <h5 class="card-title">Inventory</h5>
+            <p class="text-muted">Manage product stock levels</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <div class="card quick-action-card" onclick="window.location.href='/addProduct'">
+          <div class="card-body">
+            <i class="fa fa-plus-circle quick-action-icon"></i>
+            <h5 class="card-title">Add Product</h5>
+            <p class="text-muted">Add new products to inventory</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <h4 class="mb-3">Recent Activity</h4>
+    <div class="card">
+      <div class="card-body">
+        <div id="activity-feed">
+          <p class="text-muted">Loading recent activity...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../partials/footer') %>
+  
+  <script>
+    // Load stats
+    async function loadStats() {
+      try {
+        const resp = await fetch('/admin/stats');
+        const data = await resp.json();
+        if (data.success) {
+          document.getElementById('total-users').textContent = data.data.totalUsers || 0;
+          document.getElementById('total-products').textContent = data.data.totalProducts || 0;
+          document.getElementById('orders-today').textContent = data.data.totalOrders || 0;
+          document.getElementById('low-stock').textContent = data.data.lowStockCount || 0;
+        }
+      } catch (e) {
+        console.error('Failed to load stats', e);
+      }
+    }
+
+    // Load recent activity (placeholder for now)
+    function loadActivity() {
+      const feed = document.getElementById('activity-feed');
+      feed.innerHTML = `
+        <div class="alert alert-info mb-2">
+          <i class="fa fa-info-circle"></i> Recent order activity will appear here
+        </div>
+        <small class="text-muted">Feature coming soon...</small>
+      `;
+    }
+
+    // Initialize
+    loadStats();
+    loadActivity();
+  </script>
+</body>
+</html>

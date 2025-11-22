@@ -67,14 +67,27 @@ const AdminController = {
     try {
       const email = (req.body.email || '').toLowerCase();
       if (!email) return res.status(400).json({ success: false, error: 'Email is required' });
-      const [rows] = await db.query('SELECT id, email FROM users WHERE email = ?', [email]);
+      const [rows] = await db.query('SELECT id, email, username FROM users WHERE email = ?', [email]);
       if (!rows || !rows[0]) return res.status(404).json({ success: false, error: 'User not found' });
+      
       const otp = genOtp();
-      // store otp with expiry (10 minutes)
-      otpStore[email] = { otp, expires: Date.now() + 10 * 60 * 1000 };
-      // In production: send email. For demo, return masked notification.
-      console.log(`Demo OTP for ${email}: ${otp}`);
-      return res.json({ success: true, message: 'OTP sent (demo).', demoOtp: otp });
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+      
+      // Store OTP in database
+      await PasswordReset.create(email, otp, expiresAt);
+      
+      // Generate mock email content for UI display
+      const mockEmail = {
+        from: 'noreply@supermarketmvc.com',
+        to: email,
+        subject: 'Password Reset Request - Supermarket MVC',
+        body: `Hello ${rows[0].username || 'User'},\\n\\nWe received a request to reset your password. Please use the following One-Time Password (OTP) to complete the process:\\n\\nYour OTP Code: ${otp}\\n\\nThis code will expire in 10 minutes.\\n\\nIf you did not request this password reset, please ignore this email.\\n\\nBest regards,\\nSupermarket MVC Team`,
+        otp: otp,
+        expiresAt: expiresAt.toISOString()
+      };
+      
+      console.log(`[MOCK EMAIL] Password reset OTP for ${email}: ${otp}`);
+      return res.json({ success: true, message: 'Password reset email sent (mock).', mockEmail });
     } catch (err) {
       console.error('Request reset error', err);
       res.status(500).json({ success: false, error: err.message });
@@ -86,14 +99,20 @@ const AdminController = {
     try {
       const { email, otp, newPassword } = req.body;
       if (!email || !otp || !newPassword) return res.status(400).json({ success: false, error: 'Missing fields' });
-      const store = otpStore[email.toLowerCase()];
-      if (!store) return res.status(400).json({ success: false, error: 'No OTP requested' });
-      if (Date.now() > store.expires) { delete otpStore[email.toLowerCase()]; return res.status(400).json({ success: false, error: 'OTP expired' }); }
-      if (store.otp !== otp) return res.status(400).json({ success: false, error: 'Invalid OTP' });
-      // update password
-      await db.query('UPDATE users SET password = SHA1(?) WHERE email = ?', [newPassword, email]);
-      delete otpStore[email.toLowerCase()];
-      res.json({ success: true, message: 'Password reset successful (demo).' });
+      
+      // Find valid OTP in database
+      const otpRecord = await PasswordReset.findValid(email.toLowerCase(), otp);
+      if (!otpRecord) {
+        return res.status(400).json({ success: false, error: 'Invalid or expired OTP' });
+      }
+      
+      // Update password
+      await db.query('UPDATE users SET password = SHA1(?) WHERE email = ?', [newPassword, email.toLowerCase()]);
+      
+      // Mark OTP as used
+      await PasswordReset.markUsed(email.toLowerCase(), otp);
+      
+      res.json({ success: true, message: 'Password reset successful.' });
     } catch (err) {
       console.error('Confirm reset error', err);
       res.status(500).json({ success: false, error: err.message });
