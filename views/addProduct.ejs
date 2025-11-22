@@ -29,17 +29,38 @@
 
       <div class="mb-4">
         <label for="image" class="form-label">Product Image</label>
-        <input class="form-control" type="file" id="image" name="image" accept="image/*" required>
+        <input class="form-control" type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+        <div class="mt-2">
+          <img id="imagePreview" src="" alt="Preview" style="max-width:200px;max-height:200px;display:none;" class="img-thumbnail">
+        </div>
       </div>
 
       <div class="mb-3">
         <label for="category" class="form-label">Category</label>
-        <input type="text" class="form-control" id="category" name="category">
+        <select class="form-select" id="category" name="category">
+          <option value="Other" selected>Uncategorized</option>
+          <option value="Fruits & Vegetables">Fruits & Vegetables</option>
+          <option value="Dairy & Eggs">Dairy & Eggs</option>
+          <option value="Meat & Seafood">Meat & Seafood</option>
+          <option value="Bakery">Bakery</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Snacks & Candy">Snacks & Candy</option>
+          <option value="Canned & Packaged Foods">Canned & Packaged Foods</option>
+          <option value="Frozen Foods">Frozen Foods</option>
+          <option value="Personal Care">Personal Care</option>
+          <option value="Household">Household</option>
+        </select>
+        <small class="text-muted">Select the appropriate category for filtering and display</small>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter product description (optional)"></textarea>
       </div>
 
       <div class="mb-3">
         <label for="brand" class="form-label">Brand</label>
-        <input type="text" class="form-control" id="brand" name="brand">
+        <input type="text" class="form-control" id="brand" name="brand" placeholder="e.g., GoldenBake, DairyPure">
       </div>
 
       <div class="form-check mb-2">
@@ -57,15 +78,27 @@
         <input type="date" class="form-control" id="bestBefore" name="bestBefore">
       </div>
 
-      <div class="form-check mb-2">
+      <div class="form-check mb-3">
         <input class="form-check-input" type="checkbox" value="1" id="perishable" name="perishable">
-        <label class="form-check-label" for="perishable">Perishable</label>
+        <label class="form-check-label" for="perishable">Perishable (affects delivery time estimates)</label>
       </div>
 
-      <div class="mb-3">
-        <label for="expiry" class="form-label">Expiry (alternative)</label>
-        <input type="date" class="form-control" id="expiry" name="expiry">
-      </div>
+      <script>
+        function previewImage(event) {
+          const preview = document.getElementById('imagePreview');
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              preview.src = e.target.result;
+              preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            preview.style.display = 'none';
+          }
+        }
+      </script>
 
       <div class="d-grid">
         <button type="submit" class="btn btn-primary">Add Product</button>
