@@ -1,26 +1,108 @@
-<div class="container mt-2">
-  <% if (flash && flash.error && flash.error.length) { %>
-    <% flash.error.forEach(e => { %>
-      <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <%= e %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    <% }); %>
-  <% } %>
-  <% if (flash && flash.success && flash.success.length) { %>
-    <% flash.success.forEach(m => { %>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <%= m %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    <% }); %>
-  <% } %>
-  <% if (flash && flash.info && flash.info.length) { %>
-    <% flash.info.forEach(i => { %>
-      <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <%= i %>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    <% }); %>
+<!-- Toast Notification Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  <% if (typeof messages !== 'undefined') { %>
+    <% if (messages.success && messages.success.length > 0) { %>
+      <% messages.success.forEach((msg, index) => { %>
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" data-autohide="true" id="toast-success-<%= index %>">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fa fa-check-circle me-2"></i> <%= msg %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    
+    <% if (messages.error && messages.error.length > 0) { %>
+      <% messages.error.forEach((msg, index) => { %>
+        <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" data-autohide="true" id="toast-error-<%= index %>">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fa fa-exclamation-circle me-2"></i> <%= msg %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    
+    <% if (messages.info && messages.info.length > 0) { %>
+      <% messages.info.forEach((msg, index) => { %>
+        <div class="toast align-items-center text-white bg-info border-0 show" role="alert" data-autohide="true" id="toast-info-<%= index %>">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fa fa-info-circle me-2"></i> <%= msg %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    
+    <% if (messages.warning && messages.warning.length > 0) { %>
+      <% messages.warning.forEach((msg, index) => { %>
+        <div class="toast align-items-center text-white bg-warning border-0 show" role="alert" data-autohide="true" id="toast-warning-<%= index %>">
+          <div class="d-flex">
+            <div class="toast-body">
+              <i class="fa fa-exclamation-triangle me-2"></i> <%= msg %>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
   <% } %>
 </div>
+
+<script>
+  // Auto-hide toasts after 3 seconds
+  document.addEventListener('DOMContentLoaded', function() {
+    const toasts = document.querySelectorAll('.toast');
+    toasts.forEach(toast => {
+      const bsToast = new bootstrap.Toast(toast, {
+        autohide: true,
+        delay: 3000
+      });
+      bsToast.show();
+    });
+  });
+</script>
+
+<style>
+  .toast {
+    min-width: 300px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    animation: slideInRight 0.3s ease-out;
+  }
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .toast.hiding {
+    animation: slideOutRight 0.3s ease-out;
+  }
+  
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+  
+  .toast-body {
+    font-weight: 500;
+  }
+</style>
