@@ -221,6 +221,11 @@ app.get('/api/products/:id', async (req, res) => {
 // --- Cart / Checkout / Orders / logout routes ---
 const cartController = require('./Controllers/CartController');
 const checkoutController = require('./Controllers/CheckoutController');
+const Order = require('./Models/Order');
+const OrderItem = require('./Models/OrderItem');
+const ShippingDetails = require('./Models/ShippingDetails');
+const Payment = require('./Models/Payment');
+const adminController = require('./Controllers/AdminController');
 
 // View cart
 app.get('/cart', checkAuthenticated, cartController.view);
