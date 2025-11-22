@@ -114,6 +114,132 @@
         if (input) hidden.value = input.value;
       });
     });
+
+    // Product detail modal functionality
+    let currentProduct = null;
+
+    async function openProductModal(productId) {
+      try {
+        const resp = await fetch(`/api/products/${productId}`);
+        const data = await resp.json();
+        if (!data) return alert('Product not found');
+        
+        currentProduct = data;
+        const modal = document.getElementById('productModal');
+        const img = document.getElementById('modalProductImage');
+        const name = document.getElementById('modalProductName');
+        const desc = document.getElementById('modalProductDesc');
+        const price = document.getElementById('modalProductPrice');
+        const stock = document.getElementById('modalProductStock');
+        const category = document.getElementById('modalProductCategory');
+        const qtyInput = document.getElementById('modalQty');
+        const addToCartBtn = document.getElementById('modalAddToCart');
+        const wishlistBtn = document.getElementById('modalAddWishlist');
+        
+        // Set product details
+        img.src = data.image ? `/images/${data.image}` : '/images/misc/no-image.svg';
+        img.onerror = function() { this.src = '/images/misc/no-image.svg'; };
+        name.textContent = data.productName;
+        desc.textContent = data.description || 'No description available.';
+        price.textContent = `$${(data.price || 0).toFixed(2)}`;
+        stock.textContent = `Available: ${data.quantity}`;
+        category.textContent = data.category || 'Uncategorized';
+        
+        // Stock-based UI
+        if (data.quantity <= 0) {
+          stock.className = 'text-danger fw-bold';
+          stock.textContent = 'Out of Stock';
+          qtyInput.disabled = true;
+          qtyInput.value = 1;
+          addToCartBtn.disabled = true;
+          wishlistBtn.style.display = 'inline-block';
+        } else {
+          stock.className = data.quantity < 10 ? 'text-warning fw-bold' : 'text-success';
+          qtyInput.disabled = false;
+          qtyInput.max = data.quantity;
+          qtyInput.value = 1;
+          addToCartBtn.disabled = false;
+          wishlistBtn.style.display = 'none';
+        }
+        
+        // Show modal
+        new bootstrap.Modal(modal).show();
+      } catch (e) {
+        console.error('Failed to load product', e);
+        alert('Failed to load product details');
+      }
+    }
+
+    async function addToCartFromModal() {
+      if (!currentProduct) return;
+      const qty = parseInt(document.getElementById('modalQty').value, 10) || 1;
+      
+      try {
+        const resp = await fetch('/cart/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId: currentProduct.id, quantity: qty })
+        });
+        const data = await resp.json();
+        
+        if (data.success) {
+          alert(`Added ${qty} ${currentProduct.productName} to cart!`);
+          bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+          // Update cart count if exists
+          const cartBadge = document.querySelector('#nav-cart-icon .badge');
+          if (cartBadge && data.cartCount) cartBadge.textContent = data.cartCount;
+        } else {
+          alert(data.error || 'Failed to add to cart');
+        }
+      } catch (e) {
+        console.error('Add to cart error', e);
+        alert('Failed to add to cart');
+      }
+    }
+
+    function addToWishlistFromModal() {
+      if (!currentProduct) return;
+      alert('Wishlist feature coming soon! (Run migration 004 first)');
+      // TODO: Implement after running migration 004
+    }
+  </script>
+
+  <!-- Product Detail Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalProductName">Product Name</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-5">
+              <img id="modalProductImage" src="" alt="Product" class="img-fluid rounded" style="width:100%;max-height:300px;object-fit:cover;">
+            </div>
+            <div class="col-md-7">
+              <p class="badge bg-secondary mb-2" id="modalProductCategory">Category</p>
+              <p id="modalProductDesc" class="mb-3">Description</p>
+              <h4 class="mb-2" id="modalProductPrice">$0.00</h4>
+              <p id="modalProductStock">Available: 0</p>
+              
+              <div class="d-flex gap-2 align-items-center mt-3">
+                <label for="modalQty" class="form-label mb-0">Quantity:</label>
+                <input type="number" id="modalQty" class="form-control" style="width:80px;" min="1" value="1">
+                <button id="modalAddToCart" class="btn btn-primary" onclick="addToCartFromModal()">
+                  <i class="fa fa-cart-plus"></i> Add to Cart
+                </button>
+                <button id="modalAddWishlist" class="btn btn-outline-secondary" style="display:none;" onclick="addToWishlistFromModal()">
+                  <i class="fa fa-heart"></i> Add to Wishlist
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </script>
   <%- include('partials/footer') %>
   <script src="/js/ui.js"></script>

@@ -198,26 +198,57 @@ app.get('/features', (req, res) => res.redirect('/home'));
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.getAllExtended();
-        res.json({ success: true, data: products });
+        res.json(products);
     } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
+        console.error('API get products error', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: get single product by ID
+app.get('/api/products/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        const product = await Product.getById(id);
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+        res.json(product);
+    } catch (err) {
+        console.error('API get product error', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
 // --- Cart / Checkout / Orders / logout routes ---
 const cartController = require('./Controllers/CartController');
 const checkoutController = require('./Controllers/CheckoutController');
-const Order = require('./Models/Order');
-const OrderItem = require('./Models/OrderItem');
-const ShippingDetails = require('./Models/ShippingDetails');
-const Payment = require('./Models/Payment');
-const adminController = require('./Controllers/AdminController');
-
-// Add product to cart (DB-backed)
-app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
 
 // View cart
 app.get('/cart', checkAuthenticated, cartController.view);
+
+// Add to cart (supports both form and JSON)
+app.post('/add-to-cart/:id', checkAuthenticated, cartController.add);
+app.post('/cart/add', checkAuthenticated, async (req, res) => {
+    // JSON-only endpoint for modal add to cart
+    try {
+        const user = req.session.user;
+        if (!user) return res.status(401).json({ success: false, error: 'Not authenticated' });
+        
+        const { productId, quantity } = req.body;
+        const id = parseInt(productId, 10);
+        const qty = Math.max(1, parseInt(quantity, 10) || 1);
+        
+        // Reuse the add logic
+        req.params.id = id;
+        req.body.quantity = qty;
+        
+        // Force JSON response
+       req.headers.accept = 'application/json';
+        return cartController.add(req, res);
+    } catch (err) {
+        console.error('Cart add JSON error', err);
+        res.status(500).json({ success: false, error: 'Failed to add to cart' });
+    }
+});
 
 // Remove single product from cart
 app.post('/cart/remove/:id', checkAuthenticated, cartController.remove);
