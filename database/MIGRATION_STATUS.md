@@ -1,129 +1,90 @@
-# Schema & Migration Files - Status & Cleanup Guide
+# Migration Status & Execution Guide
 
-## 📋 Current Status
+## ✅ Completed Migrations
 
-### ✅ What's Been Done (Code Implementation)
-- **Phase 1**: Authentication system fully coded (AuthController, middleware, views)
-- **Phase 2**: Branding complete (new logo, all references updated)
-- **Git**: Both phases committed successfully
+| Migration | Status | Description | Notes |
+|-----------|--------|-------------|-------|
+| 001 | ✅ **RUN** | Password resets table | Executed manually in MySQL Workbench |
+| 002 | ✅ **RUN** | Users reset fields | Executed manually in MySQL Workbench |
 
-### ⏳ What's NOT Done (Database Setup)
-- **Phase 1 migrations** (001, 002): NOT RUN YET - Need to run these NOW
-- **Phase A-D migrations** (003-006): NOT RUN YET - Run when implementing features
+## ⏭️ Skipped Migration
 
-## 📁 File Organization Summary
+| Migration | Status | Reason |
+|-----------|--------|--------|
+| 003 | ⏭️ **SKIP** | Columns `category` and `description` already exist from old `sql_update_and_seed.sql`. Running this would cause "Duplicate column" error. |
 
-### ✅ KEEP THESE (Active Migrations)
-- `database/migrations/` - **NEW organized location for all migrations**
-  - `001_create_password_resets_table.sql` - Run NOW
-  - `002_add_password_reset_fields.sql` - Run NOW
-  - `003_add_product_enhancements.sql` - Run before Phase A
-  - `004_create_wishlist_table.sql` - Run before Phase B
-  - `005_create_notifications_table.sql` - Run before Phase C
-  - `006_add_order_tracking_fields.sql` - Run before Phase D
-  - `README.md` - Migration guide
+## ⏳ Pending Migrations (Use Unified Script)
 
-### 🗑️ CAN DELETE (Old/Duplicate Files)
-- `workbench_schema.sql` - **DELETE** (old initial schema, already executed)
-- `scripts/sql_update_and_seed.sql` - **KEEP FOR REFERENCE** (has 100 product seeds, may be useful)
+Instead of running migrations 004-007 individually, use the **unified schema script**:
 
-### ⚠️ DEPRECATED (Moved to database/migrations/)
-- `scripts/create_password_resets_table.sql` - DELETED (moved to 001)
-- `scripts/add_password_reset_fields.sql` - DELETED (moved to 002)
-- `scripts/add_product_enhancements.sql` - DELETED (moved to 003)
-- `scripts/create_wishlist_table.sql` - DELETED (moved to 004)
-- `scripts/create_notifications_table.sql` - DELETED (moved to 005)
-- `scripts/add_order_tracking_fields.sql` - DELETED (moved to 006)
+```sql
+database/migrations/UNIFIED_SCHEMA_004_to_007.sql
+```
 
-## 🎯 What to Do NOW
+This single script includes:
 
-### Step 1: Run Phase 1 & 2 Migrations (REQUIRED)
-Your Phase 1 & 2 code is already committed, but the database doesn't have the required tables/columns yet. Run these NOW:
+| Migration | Feature | Tables/Columns Created |
+|-----------|---------|----------------------|
+| 004 | Wishlist | `wishlist` table |
+| 005 | Notifications | `notifications` table |
+| 006 | Order Tracking | `orders.tracking_number`, `orders.delivery_estimate`, `orders.order_status` |
+| 007 | Promotions | `promotions` table |
 
+## 🚀 How to Run
+
+### Option 1: MySQL Workbench (Recommended)
+1. Open MySQL Workbench
+2. Connect to your `supermarket_db` database
+3. Open `UNIFIED_SCHEMA_004_to_007.sql`
+4. Click Execute (⚡ button)
+5. Check output for verification messages
+
+### Option 2: Command Line
 ```bash
-# In MySQL Workbench, execute in this order:
-1. database/migrations/001_create_password_resets_table.sql
-2. database/migrations/002_add_password_reset_fields.sql
+mysql -u root -p supermarket_db < database/migrations/UNIFIED_SCHEMA_004_to_007.sql
 ```
 
-After running these, your Phase 1 & 2 features will work:
-- Forgot password flow will function
-- Admin force reset will function
-- Password reset middleware will function
+## ✅ Verification
 
-### Step 2: Clean Up Old Files (OPTIONAL)
-```bash
-# You can safely delete this file (already executed long ago):
-rm workbench_schema.sql
+The script includes automatic verification. After running, you should see:
+- ✅ wishlist_exists: 1
+- ✅ notifications_exists: 1
+- ✅ promotions_exists: 1
+- ✅ tracking_column_exists: 1
 
-# Keep sql_update_and_seed.sql for reference (has product seed data)
+## 🔄 Rollback (If Needed)
+
+If you need to undo these migrations, run:
+```sql
+DROP TABLE IF EXISTS promotions;
+ALTER TABLE orders DROP COLUMN IF EXISTS tracking_number;
+ALTER TABLE orders DROP COLUMN IF EXISTS delivery_estimate;
+ALTER TABLE orders DROP COLUMN IF EXISTS order_status;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS wishlist;
 ```
 
-### Step 3: Future Migrations (When Implementing New Features)
-When you're ready to implement Phases A-D, run migrations 003-006 **before coding**:
+## 📋 Migration Dependencies
 
-- **Before Phase A** (Categories): Run `003_add_product_enhancements.sql`
-- **Before Phase B** (Wishlist): Run `004_create_wishlist_table.sql`
-- **Before Phase C** (Notifications): Run `005_create_notifications_table.sql`
-- **Before Phase D** (Tracking): Run `006_add_order_tracking_fields.sql`
+- **004 (Wishlist)**: Requires `users` and `products` tables ✅
+- **005 (Notifications)**: Requires `users` table ✅
+- **006 (Order Tracking)**: Requires `orders` table ✅
+- **007 (Promotions)**: Requires `users` and `products` tables ✅
 
-## 🔍 Why the New Structure?
+All dependencies are satisfied!
 
-**OLD** (Confusing):
-```
-scripts/
-  - create_password_resets_table.sql  ← Migration
-  - add_password_reset_fields.sql      ← Migration
-  - sql_update_and_seed.sql            ← Seed data
-workbench_schema.sql                   ← Old initial schema
-```
+## 🎯 When to Run
 
-**NEW** (Clean):
-```
-database/
-  migrations/
-    - 001_create_password_resets_table.sql
-    - 002_add_password_reset_fields.sql
-    - 003_add_product_enhancements.sql
-    - 004_create_wishlist_table.sql
-    - 005_create_notifications_table.sql
-    - 006_add_order_tracking_fields.sql
-    - README.md  ← Migration guide
-scripts/
-  - sql_update_and_seed.sql  ← Seed data (keep for reference)
-```
+Run the unified script **before** using these features:
+- **Wishlist**: Add products to wishlist, stock notifications
+- **Notifications**: Admin alerts, stock updates, order notifications
+- **Order Tracking**: Track deliveries, estimate delivery dates
+- **Promotions**: Create clearance sales, seasonal deals, bundle offers
 
-## 📊 Schema Changes Tracking
+## 📝 Notes
 
-### Already in Database (from workbench_schema.sql executed previously):
-- ✅ `users` table (basic structure)
-- ✅ `products` table (basic structure)
-- ✅ `orders` table
-- ✅ `order_items` table
-- ✅ `payments` table
-- ✅ `shipping_details` table
-- ✅ `cart_items` table
-
-### Need to Add NOW (Phase 1 & 2):
-- ⏳ `password_resets` table (001)
-- ⏳ `users.reset_required` column (002)
-- ⏳ `users.reset_token` column (002)
-- ⏳ `users.reset_token_expires` column (002)
-
-### Will Add Later (Phase A-D):
-- 🔜 `products.category` column (003)
-- 🔜 `products.description` column (003)
-- 🔜 `products.is_perishable` column (003)
-- 🔜 `wishlist` table (004)
-- 🔜 `notifications` table (005)
-- 🔜 `orders.estimated_delivery_time` column (006)
-- 🔜 `orders.actual_delivery_time` column (006)
-- 🔜 `orders.tracking_notes` column (006)
-
----
-
-**Bottom Line**: 
-- **Phase 1 & 2 CODE**: ✅ Complete and committed
-- **Phase 1 & 2 DATABASE**: ⏳ Run migrations 001 and 002 NOW
-- **Old workbench_schema.sql**: 🗑️ Can delete (already executed)
-- **All migrations**: 📁 Now organized in `database/migrations/`
+- Uses `IF NOT EXISTS` and `IF EXISTS` clauses for safety
+- Can be run multiple times without errors
+- Includes foreign key constraints for data integrity
+- Proper indexing for performance
+- Rollback script included for easy reversal
