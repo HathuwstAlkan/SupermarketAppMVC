@@ -90,7 +90,8 @@ const add = async (req, res) => {
             quantity: parseInt(req.body.quantity,10) || 0,
             price: parseFloat(req.body.price) || 0,
             image: req.file ? req.file.filename : null,
-            category: req.body.category || null,
+            category: req.body.category || 'Other',
+            description: req.body.description || null,
             featured: req.body.featured ? 1 : 0,
             brand: req.body.brand || null,
             bestBefore: req.body.bestBefore || null,
@@ -99,9 +100,12 @@ const add = async (req, res) => {
             expiry: req.body.expiry || null
         };
         await Product.add(productData);
-        res.redirect('/');
+        req.flash('success', 'Product added successfully!');
+        res.redirect('/inventory');
     } catch (err) {
-        res.status(500).render('error', { error: err.message });
+        console.error('Add product error:', err);
+        req.flash('error', 'Failed to add product');
+        res.redirect('/addProduct');
     }
 };
 
@@ -113,7 +117,8 @@ const update = async (req, res) => {
             quantity: parseInt(req.body.quantity,10) || 0,
             price: parseFloat(req.body.price) || 0,
             image: req.file ? req.file.filename : req.body.currentImage,
-            category: req.body.category || null,
+            category: req.body.category || 'Other',
+            description: req.body.description || null,
             featured: req.body.featured ? 1 : 0,
             brand: req.body.brand || null,
             bestBefore: req.body.bestBefore || null,
@@ -122,10 +127,16 @@ const update = async (req, res) => {
             expiry: req.body.expiry || null
         };
         const ok = await Product.update(id, productData);
-        if (!ok) return res.status(404).render('error', { error: 'Product not found' });
-        res.redirect('/');
+        if (!ok) {
+            req.flash('error', 'Product not found');
+            return res.redirect('/inventory');
+        }
+        req.flash('success', 'Product updated successfully!');
+        res.redirect('/inventory');
     } catch (err) {
-        res.status(500).render('error', { error: err.message });
+        console.error('Update product error:', err);
+        req.flash('error', 'Failed to update product');
+        res.redirect('/inventory');
     }
 };
 
