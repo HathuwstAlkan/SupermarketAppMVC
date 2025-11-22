@@ -5,7 +5,7 @@
 -- This fixes inconsistent naming (Dairy → Dairy & Eggs, Produce → Fruits & Vegetables, etc.)
 -- ============================================================================
 
-USE supermarket_db;
+USE c372_supermarketdb;
 
 -- Standardize category names to 11 official categories
 UPDATE products SET category = 'Fruits & Vegetables' WHERE category IN ('Produce', 'Greens', 'Other') AND id IN (19, 31, 32, 33, 34, 53, 54, 55, 56, 57, 112);

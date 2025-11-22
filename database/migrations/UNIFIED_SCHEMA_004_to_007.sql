@@ -14,7 +14,7 @@
 -- - 007: Promotions system
 -- ============================================================================
 
-USE supermarket_db;
+USE c372_supermarketdb;
 
 -- ============================================================================
 -- MIGRATION 004: Create wishlist table
@@ -58,14 +58,16 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- ============================================================================
 -- MIGRATION 006: Add order tracking fields
 -- Purpose: Enable order tracking and delivery estimates
+-- NOTE: MySQL doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN
+-- If columns exist, this will error but it's safe to ignore
 -- ============================================================================
 
-ALTER TABLE orders 
-ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100) DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS delivery_estimate DATE DEFAULT NULL,
-ADD COLUMN IF NOT EXISTS order_status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
-ADD INDEX idx_tracking (tracking_number),
-ADD INDEX idx_status (order_status);
+-- Add columns one by one (MySQL syntax)
+ALTER TABLE orders ADD COLUMN tracking_number VARCHAR(100) DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN delivery_estimate DATE DEFAULT NULL;
+ALTER TABLE orders ADD COLUMN order_status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending';
+ALTER TABLE orders ADD INDEX idx_tracking (tracking_number);
+ALTER TABLE orders ADD INDEX idx_status (order_status);
 
 -- ============================================================================
 -- MIGRATION 007: Create promotions table
@@ -97,19 +99,19 @@ CREATE TABLE IF NOT EXISTS promotions (
 
 SELECT 'Checking wishlist table...' AS status;
 SELECT COUNT(*) AS wishlist_exists FROM information_schema.tables 
-WHERE table_schema = 'supermarket_db' AND table_name = 'wishlist';
+WHERE table_schema = 'c372_supermarketdb' AND table_name = 'wishlist';
 
 SELECT 'Checking notifications table...' AS status;
 SELECT COUNT(*) AS notifications_exists FROM information_schema.tables 
-WHERE table_schema = 'supermarket_db' AND table_name = 'notifications';
+WHERE table_schema = 'c372_supermarketdb' AND table_name = 'notifications';
 
 SELECT 'Checking promotions table...' AS status;
 SELECT COUNT(*) AS promotions_exists FROM information_schema.tables 
-WHERE table_schema = 'supermarket_db' AND table_name = 'promotions';
+WHERE table_schema = 'c372_supermarketdb' AND table_name = 'promotions';
 
 SELECT 'Checking orders tracking columns...' AS status;
 SELECT COUNT(*) AS tracking_column_exists FROM information_schema.columns 
-WHERE table_schema = 'supermarket_db' AND table_name = 'orders' AND column_name = 'tracking_number';
+WHERE table_schema = 'c372_supermarketdb' AND table_name = 'orders' AND column_name = 'tracking_number';
 
 SELECT '✅ All migrations applied successfully!' AS status;
 SELECT 'You can now use Wishlist, Notifications, Order Tracking, and Promotions features.' AS next_steps;
