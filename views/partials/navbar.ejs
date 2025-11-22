@@ -1,70 +1,183 @@
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center" href="<%= user && user.role === 'admin' ? '/admin' : '/' %>">
-      <img src="/images/logo.png" alt="Supermarket MVC logo" width="32" height="32" class="brand-logo" style="margin-right:10px;" onerror="this.style.display='none'">
+      <img src="/images/brand/logo.png" alt="Supermarket MVC" width="32" height="32" class="brand-logo me-2" onerror="this.style.display='none'">
       <span class="brand-text">Supermarket MVC</span>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="collapsibleNavbar">
-      <ul class="navbar-nav me-auto">
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <!-- Left side navigation -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <% if (user && user.role === 'admin') { %>
-          <li class="nav-item"><a class="nav-link" href="/inventory">Inventory</a></li>
-          <li class="nav-item"><a class="nav-link" href="/addProduct">Add Product</a></li>
+          <!-- Admin navigation -->
+          <li class="nav-item">
+            <a class="nav-link" href="/admin"><i class="fa fa-home me-1"></i> Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/inventory"><i class="fa fa-boxes me-1"></i> Inventory</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/analytics"><i class="fa fa-chart-line me-1"></i> Analytics</a>
+          </li>
+        <% } else if (user && user.role !== 'admin') { %>
+          <!-- Customer navigation -->
+          <li class="nav-item">
+            <a class="nav-link" href="/shopping"><i class="fa fa-store me-1"></i> Shop</a>
+          </li>
         <% } %>
       </ul>
 
-      <ul class="navbar-nav ms-auto align-items-center">
+      <!-- Right side navigation -->
+      <ul class="navbar-nav ms-auto align-items-lg-center">
         <% if (user) { %>
+          <!-- Shopping cart (customer only) -->
           <% if (user.role !== 'admin') { %>
-            <li class="nav-item me-2">
+            <li class="nav-item me-2 me-lg-3">
               <a class="nav-link position-relative" href="/cart" id="nav-cart-icon">
                 <i class="fa fa-shopping-cart fa-lg"></i>
-                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle"><%= typeof cartCount !== 'undefined' ? cartCount : 0 %></span>
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+                  <%= typeof cartCount !== 'undefined' ? cartCount : 0 %>
+                </span>
               </a>
             </li>
           <% } %>
 
-          <% if (user.role === 'admin') { %>
-            <li class="nav-item me-2"><a class="nav-link" href="/analytics">Analytics</a></li>
-            <li class="nav-item me-2"><a class="nav-link" href="/admin-panel">Admin Panel</a></li>
-          <% } else { %>
-            <li class="nav-item me-2"><a class="nav-link" href="/shopping">Shop</a></li>
-          <% } %>
-
+          <!-- Profile dropdown -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <% const avatar = user && user.avatar ? user.avatar : 'default-avatar.svg'; %>
-              <img src="/images/<%= avatar %>" alt="profile" class="rounded-circle" width="32" height="32" style="object-fit:cover;margin-right:8px;" onerror="this.src='/images/default-avatar.svg'">
+              <% const avatar = user && user.avatar ? user.avatar : 'misc/default-avatar.svg'; %>
+              <img src="/images/<%= avatar %>" alt="<%= user.username %>" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover;" onerror="this.src='/images/misc/default-avatar.svg'">
+              <span class="d-none d-lg-inline"><%= user.username %></span>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
-              <li><a class="dropdown-item" href="/profile">Profile Settings</a></li>
+              <li><h6 class="dropdown-header"><%= user.username %></h6></li>
+              <li><a class="dropdown-item" href="/profile"><i class="fa fa-user me-2"></i> Profile</a></li>
               <% if (user.role === 'admin') { %>
-                <li><a class="dropdown-item" href="/admin">Admin Home</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/admin-panel"><i class="fa fa-cog me-2"></i> Admin Panel</a></li>
               <% } else { %>
-                <li><a class="dropdown-item" href="/orders">View Orders</a></li>
+                <li><a class="dropdown-item" href="/orders"><i class="fa fa-receipt me-2"></i> My Orders</a></li>
               <% } %>
               <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+              <li><a class="dropdown-item text-danger" href="/logout"><i class="fa fa-sign-out me-2"></i> Logout</a></li>
             </ul>
           </li>
         <% } else { %>
-          <li class="nav-item me-2"><a class="nav-link" href="/shopping">Shop</a></li>
-          <li class="nav-item ms-2">
-            <a class="btn btn-sm btn-outline-light" href="/login">Sign in</a>
+          <!-- Guest navigation -->
+          <li class="nav-item me-2">
+            <a class="nav-link" href="/shopping"><i class="fa fa-store me-1"></i> Shop</a>
           </li>
           <li class="nav-item ms-2">
-            <a class="btn btn-sm btn-warning" href="/register">Sign up</a>
+            <a class="btn btn-sm btn-outline-light" href="/login">Sign In</a>
+          </li>
+          <li class="nav-item ms-2">
+            <a class="btn btn-sm btn-warning" href="/register">Sign Up</a>
           </li>
         <% } %>
       </ul>
     </div>
   </div>
-
-  <!-- central flashes handled below -->
 </nav>
 
+<!-- Flash Messages -->
 <%- include('flashes') %>
+
+<!-- Modals -->
 <%- include('login-modal') %>
 <%- include('register-modal') %>
+
+<style>
+  /* Navbar enhancements */
+  .navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .navbar-brand .brand-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  
+  .nav-link {
+    transition: all 0.3s ease;
+  }
+  
+  .nav-link:hover {
+    transform: translateY(-2px);
+  }
+  
+  /* Navbar toggler animation */
+  .navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+  }
+  
+  .navbar-toggler:focus {
+    box-shadow: none;
+  }
+  
+  .navbar-toggler-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
+    transform: rotate(90deg);
+  }
+  
+  /* Dropdown enhancements */
+  .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    animation: slideDown 0.3s ease;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+    padding-left: 1.25rem;
+  }
+  
+  .dropdown-header {
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  /* Cart badge */
+  #nav-cart-icon .badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.45em;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 991.98px) {
+    .navbar-nav {
+      padding: 1rem 0;
+    }
+    
+    .nav-item {
+      padding: 0.25rem 0;
+    }
+    
+    .dropdown-menu {
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+  }
+</style>
