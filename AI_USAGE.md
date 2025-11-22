@@ -462,3 +462,18 @@ Run these SQL migrations in MySQL Workbench:
 - One-time use (marked as `used` in database)
 
 ---
+---
+
+## 2025-11-23 Turn 5: Unified Schema Scripts + Responsive Navbar + Toast Notifications
+
+### 9 Commits This Session:
+1. UNIFIED_SCHEMA_004_to_007.sql - combines wishlist, notifications, order tracking, promotions
+2. Responsive navbar - animated hamburger, removed duplicates, sticky-top
+3. Toast notifications - auto-close 3s, Bootstrap toasts, slide animations
+4. STANDARDIZE_CATEGORIES.sql - fixes 112 products to use 11 standard categories
+5-9. Inventory filters, update product form, ProductController fixes, MySQL syntax corrections
+
+### Key Points:
+- Migration 003: SKIP IT - columns already exist
+- Database name: c372_supermarketdb (not supermarket_db)
+- MySQL syntax: IF NOT EXISTS not supported in ALTER TABLE
